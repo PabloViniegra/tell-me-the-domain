@@ -30,7 +30,7 @@ The skill follows a seven-phase workflow:
 - **Evidence over assumption.** Every non-obvious claim in the technical guide carries a `path/to/file.ext:line` reference. Claims without backing go to the open questions.
 - **Observed versus inferred.** Assertions drawn from code are stated as fact. Reasonable guesses are hedged with "appears to" or "suggests" and rerouted to the open questions.
 - **Write as you go.** Findings are appended to a scratch file (`.tell-me-the-domain/notes.md`) as they are made, so an interrupted run still leaves a trail.
-- **Token discipline.** Targeted search over file reads. Read a file in full only if it is in the ranked core. Never read generated code, lockfiles, vendored dependencies, or fixtures. Stop at saturation.
+- **Complexity firewalls.** Large or legacy repositories are mapped before deep reading, partitioned by business boundary, explored under an explicit budget, and reported with coverage limits instead of confident guesses.
 - **Name things the way the business names them.** A mismatch between code naming and business naming is itself a finding, and the glossary is where a newcomer gets unstuck fastest.
 
 ## Repository contents

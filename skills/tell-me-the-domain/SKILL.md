@@ -39,10 +39,25 @@ Before reading anything, establish:
 - The repository root and whether this is a monorepo (several deployables) or a single service.
 - Whether the user wants the whole repo or one bounded area ("just the billing service").
 - Anything they already know: the industry, the customer, the vocabulary. A single sentence of context from them saves a lot of guessing.
+- A discovery budget: target one bounded context, 10–20 candidate files, and a small set of evidence-backed rules before expanding. In a large repository, "whole repo" means a structural map plus prioritized contexts, not exhaustive reading.
 
 If the scope is ambiguous and cheap to clarify, ask one question. Otherwise proceed and state your assumption in the output.
 
 Create the scratch file and begin.
+
+## Complexity firewall — mandatory for large or legacy repositories
+
+Treat repository size, coupling, and uncertainty as signals to narrow scope, not invitations to read more. Before deep exploration:
+
+1. **Map before opening files.** Use available AST/import/call-graph, symbol, impact-analysis, and code-search tools. If a tool is unavailable or incomplete, record that limitation and use directory shape, manifests, routes, schemas, tests, and git history as fallbacks.
+2. **Partition by business boundary.** In a monorepo or tangled legacy system, identify deployables, bounded contexts, data ownership, queues, and external integrations. Work one context at a time. Do not merge subagent findings until each has compact evidence and uncertainty.
+3. **Prioritize hotspots.** Rank files by domain vocabulary, fan-in, branching/decision density, test coverage, churn, and proximity to data or integration boundaries. Use impact analysis before following a dependency chain.
+4. **Cap exploration.** Start with 10–20 candidates, 3–7 core modules, and 2–3 value flows. Read only enough to confirm or reject a hypothesis. After three consecutive files add no new concept or rule, stop that branch.
+5. **Keep an evidence ledger.** Every finding records `observed | inferred | unknown`, `path:line`, confidence, and the next action. Never promote an inference to a rule merely because multiple layers repeat it.
+6. **Escalate instead of guessing.** Stop and ask the user when context boundaries, business scope, or conflicting rules cannot be resolved cheaply. Otherwise isolate the ambiguity in open questions and continue without inventing rationale.
+7. **Protect context and the repository.** Never read generated code, lockfiles, vendored code, snapshots, fixtures, or whole large files. Use targeted searches and bounded slices. Only write the scratch file and requested domain documents; never change product source.
+
+When complexity is high, the deliverable must say what was covered, what was intentionally sampled or excluded, which tools were unavailable, and how a second pass should continue. A partial, traceable model is safer than a confident full-repo fiction.
 
 ## Phase 1 — Cheap recon
 
@@ -116,7 +131,7 @@ Calibrate the register:
 - `BUSINESS_OVERVIEW.md` must be readable by someone who has never seen the code. No file paths, no class names, no framework names. If a rule cannot be stated in business language, state its effect instead: not "`validateSlaWindow` throws after 48h" but "a claim not reviewed within two days is escalated automatically".
 - `TECHNICAL_DOMAIN_GUIDE.md` is for someone about to change something. Lead with where the domain lives and what will break if they touch it. Every rule gets its evidence reference.
 
-Both documents end with the open questions. Both state, near the top, the commit or date they were generated from — domain docs rot, and a reader deserves to know how much to trust them.
+Both documents end with the open questions. Both state, near the top, the commit or date they were generated from — domain docs rot, and a reader deserves to know how much to trust them. For large or legacy repositories, also state the analyzed scope, excluded or sampled areas, discovery budget reached, confidence limits, and recommended next context.
 
 Finally, tell the user in the chat: the two or three findings that would surprise a newcomer most, and the open questions that most need a human answer. Delete the scratch file unless they want to keep it.
 
@@ -124,13 +139,16 @@ Finally, tell the user in the chat: the two or three findings that would surpris
 
 Exploration is where this skill can waste an enormous amount of context, so:
 
-- Prefer targeted search with line numbers and two or three lines of context (`rg -n -C2`) over opening files. Grep answers "does this rule exist" far cheaper than reading.
+- Set a discovery budget before searching: bounded contexts, candidate files, core modules, and value flows. Expand it only when a new high-confidence finding justifies the cost.
+- Prefer structural tools and targeted search with line numbers and two or three lines of context (`rg -n -C2`) over opening files. Graphs answer "what matters"; search answers "does this rule exist"; file reads confirm only the highest-ranked hypotheses.
+- Use symbol/flow/impact tools to traverse only relevant callers and dependants. Do not recursively chase every import from a domain file.
 - Classify a file by reading its first ~60 lines. Read a file in full only if it is in the ranked core and reasonably short.
 - Never read generated code, lockfiles, vendored dependencies, snapshots, or fixtures. Sample large test suites by name only.
-- Append to the notes file immediately after each read, then move on. The note replaces the source.
-- Work context by context in a monorepo, finishing one before starting the next.
-- **Stop at saturation.** When three consecutive files add no new concept or rule, the picture is complete enough. Breadth of concepts beats depth on any single module — a newcomer needs the map, not the terrain.
-- If subagents are available, fan out one per bounded context, and require each to return only a compact structured summary (concepts, rules with references, open questions). The point is that the raw exploration never enters the main context.
+- Append to the notes file immediately after each read, including evidence type, confidence, and the next search. The note replaces the source.
+- Work context by context in a monorepo, finishing one before starting the next. Keep raw subagent output out of the main context; require compact findings with references.
+- Stop at saturation, budget exhaustion, or unresolved boundary ambiguity. Report the stopping reason instead of silently broadening scope.
+- If three consecutive files add no new concept or rule, stop that branch. Breadth of concepts beats depth on any single module — a newcomer needs the map, not the terrain.
+- If subagents are available, fan out one per bounded context, and require each to return only: scope, concepts, rules with references, confidence, conflicts, exclusions, and open questions. The point is that raw exploration never enters the main context.
 
 ## Reference material
 

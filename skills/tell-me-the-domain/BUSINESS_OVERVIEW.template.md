@@ -2,6 +2,7 @@
 
 > Reconstructed from the codebase at [commit / date]. Written for readers who do not work in the code.
 > Statements marked *(assumed)* were inferred from the implementation and have not been confirmed by anyone on the business side.
+> **Scope note:** [What was analyzed, what was sampled or excluded, and which questions need a human answer before relying on this overview.]
 
 ## In one paragraph
 

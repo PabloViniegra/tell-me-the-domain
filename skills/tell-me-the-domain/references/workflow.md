@@ -6,7 +6,7 @@ Seven phases, in order. Each ends with a clear handoff to the next.
 
 Before reading anything, establish:
 
-- **Output language.** Ask the user which language the two output documents should be written in. Default to English. If the answer is anything other than English, surface this disclaimer before proceeding and let the user confirm:
+- **Output language.** Ask the user upfront which language they want the two output documents written in. If the answer is empty, gibberish, or an unrecognizable language name, fall back to English. If the user picks anything other than English, surface this disclaimer before proceeding and let them confirm:
   > Non-English output uses more tokens per word than English on most tokenizers (Latin-script languages ~1.5–2x; non-Latin scripts such as Chinese, Japanese, Korean, or Arabic 2–4x). The exploration phase is unchanged; only the document-writing phase pays the extra cost.
   Form-filling vocabulary (Mermaid labels, status enums, code identifiers, proper nouns) stays in the source language of the codebase regardless.
 - The repository root and whether this is a monorepo (several deployables) or a single service.

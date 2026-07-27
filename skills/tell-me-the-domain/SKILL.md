@@ -1,6 +1,6 @@
 ---
 name: tell-me-the-domain
-description: "Trigger: onboarding, business rules, document domain, legacy code, third-party code. Reconstruct a codebase's business domain into BUSINESS_OVERVIEW.md and TECHNICAL_DOMAIN_GUIDE.md."
+description: "Trigger: onboarding, business rules, document domain, legacy code, third-party code. Reconstruct a codebase's business domain into two newcomer-facing docs."
 license: MIT
 metadata:
   author: "PabloViniegra"
@@ -9,11 +9,9 @@ metadata:
 
 # Domain Discovery
 
-A skill for newcomers who join a project without knowing the business behind it. Read the codebase as the written record of the business and turn it into two documents a newcomer can actually use.
+A skill for newcomers who join a project without knowing the business behind it. Read the codebase as the written record of the business. Treat every extraction as an observation grounded in the repository; do not infer intent or propose corrections.
 
-The code is the only source of truth for what the system does. Treat every extraction as an observation grounded in the repository. Do not infer business intent, expected behavior, or a correction to an inconsistency.
-
-## First, ask the language
+## Decision gate: output language
 
 Before doing anything else, ask the user which language they want `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` written in. If the answer is empty, gibberish, or an unrecognizable language name, fall back to English. If they pick anything other than English, surface the token-cost disclaimer in `references/workflow.md` Phase 0 before proceeding.
 

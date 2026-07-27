@@ -19,7 +19,7 @@ Given a codebase, the skill produces two structured documents alongside the proj
 | `BUSINESS_OVERVIEW.md` | Product owners, analysts, new joiners from the business side | What the product does, for whom, what rules govern it, and where the value lives. Free of file paths, class names, and framework jargon. |
 | `TECHNICAL_DOMAIN_GUIDE.md` | Consultants and developers about to touch the code | Where the domain lives in the tree, which modules own which concepts, which invariants must not be broken, with `path:line` evidence for every claim. |
 
-Both documents end with an *open questions* section addressed to a person who would know — the newcomer's agenda for their first week.
+Both documents describe only behavior observed in the repository. Inconsistencies, contradictory rules, naming mismatches, and unexpected behavior are recorded directly as findings with evidence; the skill does not ask a newcomer to decide what the system should do. The final section is reserved for information the repository genuinely does not establish, such as an unavailable external contract or undocumented rationale.
 
 ## How it works
 
@@ -35,8 +35,8 @@ The skill follows a seven-phase workflow:
 
 ## Operating principles
 
-- **Evidence over assumption.** Every non-obvious claim in the technical guide carries a `path/to/file.ext:line` reference. Claims without backing go to the open questions.
-- **Observed versus inferred.** Assertions drawn from code are stated as fact. Reasonable guesses are hedged with "appears to" or "suggests" and rerouted to the open questions.
+- **Observed behavior only.** The skill documents what the code does, not what it appears intended to do. Inconsistencies and competing implementations are findings, not questions for the newcomer.
+- **Evidence over assumption.** Every non-obvious claim in the technical guide carries a `path/to/file.ext:line` reference. Unsupported claims are omitted; genuinely missing information is recorded as absent from the repository.
 - **Write as you go.** Findings are appended to a scratch file (`.tell-me-the-domain/notes.md`) as they are made, so an interrupted run still leaves a trail.
 - **Complexity firewalls.** Large or legacy repositories are mapped before deep reading, partitioned by business boundary, explored under an explicit budget, and reported with coverage limits instead of confident guesses.
 - **Name things the way the business names them.** A mismatch between code naming and business naming is itself a finding, and the glossary is where a newcomer gets unstuck fastest.
@@ -67,7 +67,7 @@ This skill is intended to be loaded by an agent that supports the opencode skill
 1. Explore the codebase following the phases above.
 2. Persist findings to `.tell-me-the-domain/notes.md` as it goes.
 3. Write `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` into `docs/` (or the repository root if no `docs/` folder exists).
-4. Report the two or three findings that would most surprise a newcomer, plus the open questions that most need a human answer.
+4. Report the two or three observed findings that would most surprise a newcomer. Mention missing information only when the repository genuinely cannot establish it; never ask the newcomer to reconcile code inconsistencies.
 
 ## When to use it
 

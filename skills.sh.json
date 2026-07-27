@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Discovery",
+      "description": "Skills that reconstruct a codebase's business domain for onboarding, documentation, and analysis.",
+      "skills": [
+        "tell-me-the-domain"
+      ]
+    }
+  ]
+}

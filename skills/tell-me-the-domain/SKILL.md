@@ -56,6 +56,7 @@ For large or legacy repos, apply `references/complexity-firewall.md` before deep
 ## Output contract
 
 - Write `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` to `docs/` (or repo root if no `docs/`).
+- Write both documents in the language the user chose at the start of Phase 0 (default English). See `references/workflow.md` for the token-cost disclaimer shown to non-English users.
 - Delete `.tell-me-the-domain/notes.md` unless the user asks to keep it.
 - Tell the user in chat the two or three observed findings that would surprise a newcomer most. Mention only open questions caused by genuinely absent evidence; do not ask the newcomer to explain or resolve code inconsistencies.
 - For large or legacy repos, the deliverable must state what was covered, what was sampled or excluded, which tools were unavailable, and how a second pass should continue.

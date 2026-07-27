@@ -2,6 +2,13 @@
 
 [![skills.sh](https://skills.sh/b/PabloViniegra/tell-me-the-domain)](https://skills.sh/PabloViniegra/tell-me-the-domain)
 
+
+> **Day one: You land on a new project.** Nobody explains what it’s actually about or what it does. That onboarding meeting with your Tech Lead never happens, yet tasks are already being assigned to you before you even grasp the basics of the business you're coding for.
+> 
+> **This skill helps you understand the project’s business logic directly from the codebase**—not what your Product Owner *thinks* it does, and not what outdated documentation says.
+> 
+> **The code is the ultimate source of truth for the domain.**
+
 A reusable agent skill for reconstructing the business domain of an unfamiliar codebase. It reads the repository as the only source of truth that never lies about what the system *does*, and turns it into two documents a newcomer can actually use.
 
 ## Install

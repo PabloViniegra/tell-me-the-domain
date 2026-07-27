@@ -11,7 +11,31 @@
 
 **Discovery boundary:** [Contexts and deployables analyzed.] **Sampled or excluded:** [Areas intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, conflicting evidence, or recommended next context.]
 
+## Three things that would surprise a newcomer
+
+[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and the evidence. Hard cap at three; longer lists become decoration. Same findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer` in business language.]
+
+*Example:*
+1. *The "Paid" transition is guarded twice with different rules.* *`src/claims/service.py:142` allows `Submitted → Rejected`; `migrations/0042.sql:18` does not. Either side can be patched without the other noticing.* — `src/claims/service.py:142`, `migrations/0042.sql:18`
+2. *Pricing logic is duplicated in two places that diverge on rounding.* *`src/pricing/engine.py` uses banker's rounding; `src/payments/calculator.py` rounds half-up. There is no shared helper.* — `src/pricing/engine.py:201`, `src/payments/calculator.py:88`
+3. *The legacy `legacy_submit()` function is referenced by nothing but still imported.* *Imports come from a script that was removed in commit `a1b2c3d`. The function is dead but the import chain keeps the module alive.* — `src/claims/actions.py:204`, `git log --follow src/claims/actions.py`
+
+## Read these first
+
 **Read these first:** `path/a.ext`, `path/b.ext`, `path/c.ext` — the three files that explain the most about the domain.
+
+**Start here for the actual task** — action entries that point a contributor at the right place for what they came to do, not what they came to learn:
+
+- *Fixing a bug in `<area>`:* start at `<path:line>`; tests in `<path>`; owner `<team or person>`. Do not change `<path:line>` without reading `<policy path>` (rule R-NNN).
+- *Deploying:* `<command>`; production requires `<team>` approval; recent incident evidence at `<path:line>`.
+- *On-call:* logs at `<location>`; runbook at `<path>`; page `<team>` for SEV-1.
+- *Onboarding for the long haul:* read Orientation, then Domain map, then the Invariants section for the module you will own.
+
+*Example:*
+
+- *Fixing a pricing bug:* `src/pricing/rounding.py:14`; tests in `tests/pricing/golden/`; owner `@pricing-team`. Do not change the rounding policy without `docs/policies/rounding.md` (rule R-007).
+- *Deploying:* `bin/deploy.sh --env=staging`; production requires `@ops` approval. The last deploy failure was caused by missing permissions on `s3://acme-fee-schedules/` — `terraform/main.tf:88`.
+- *On-call:* Datadog dashboard `acme-claims-prod`; runbook `docs/runbooks/`. SEV-1: page `@claims-oncall`; infrastructure: `@platform-oncall`.
 
 ## Domain map
 

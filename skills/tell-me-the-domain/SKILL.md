@@ -19,7 +19,7 @@ Before doing anything else, ask the user which language they want `BUSINESS_OVER
 
 - A project whose business you do not understand.
 - Inherited legacy or third-party code.
-- Requests like "what does this system actually do", "what are the business rules here", "help me onboard", "document the domain", or explaining a codebase to non-technical stakeholders.
+- Requests like "what does this system actually do", "what are the business rules here", "help me onboard", "document the domain".
 - Even when only onboarding, understanding, or documenting business logic is mentioned — the output files need not be named.
 
 ## What you produce
@@ -60,7 +60,7 @@ For large or legacy repos, apply `references/complexity-firewall.md` before deep
 - Write `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` to `docs/` (or repo root if no `docs/`).
 - Write both documents in the language the user chose upfront. See `references/workflow.md` Phase 0 for the ask script and the token-cost disclaimer shown to non-English users.
 - Delete `.tell-me-the-domain/notes.md` unless the user asks to keep it.
-- Tell the user in chat the two or three observed findings that would surprise a newcomer most. Mention only open questions caused by genuinely absent evidence; do not ask the newcomer to explain or resolve code inconsistencies.
+- Tell the user in chat the two or three observed findings that would surprise a newcomer most, and surface the same findings in both documents under "Three things that would surprise a newcomer". Mention only open questions caused by genuinely absent evidence; do not ask the newcomer to explain or resolve code inconsistencies.
 - For large or legacy repos, the deliverable must state what was covered, what was sampled or excluded, which tools were unavailable, and how a second pass should continue.
 
 ## References

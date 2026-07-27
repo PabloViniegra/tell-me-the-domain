@@ -4,6 +4,15 @@
 > Inconsistencies and ambiguities found in the code are recorded as observations with their evidence, not as questions for the reader to resolve.
 > **Scope note:** [What was analyzed, what was sampled or excluded, and which facts could not be established from the repository.]
 
+## Three things that would surprise a newcomer
+
+[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and the evidence. Hard cap at three; longer lists become decoration.]
+
+*Example:*
+1. *The "Submit" button does not send the claim to the insurer.* *It only enqueues the claim for Acme's internal review. Billers regularly leave the platform believing they have filed with the insurer when they have not.* — `src/claims/actions.py:88`
+2. *"Reject" means two different things in the same flow.* *Internal-review rejections and insurer rejections share the `ClaimRejected` exception but require different downstream handling; the email template currently treats them identically.* — `src/claims/exceptions.py:14`, `templates/rejection_email.*:7`
+3. *A claim can be marked Paid in the database even if the service-layer guard is bypassed.* *The Python guard and the DB CHECK are supposed to enforce the same rule, but they reject different transitions — either side can be patched without the other noticing.* — `src/claims/service.py:142`, `migrations/0042.sql:18`
+
 ## In one paragraph
 
 [What the product does, for whom, and the problem it removes. Plain language, no technical terms. If someone reads only this paragraph, they should be able to describe the product in a meeting.]

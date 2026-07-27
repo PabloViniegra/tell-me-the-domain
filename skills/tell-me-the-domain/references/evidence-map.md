@@ -119,4 +119,4 @@ Read the *names* first — `it("rejects a refund after 30 days")` is a requireme
 
 Do not spend tokens on: dependency lockfiles, generated clients and stubs, migrations that only add indexes, CI configuration, linter and formatter config, boilerplate CRUD controllers that just forward to a service, DTO mappers, snapshot files, vendored code.
 
-If a whole repository looks like this, the domain may live elsewhere — in a sibling service, a stored-procedure layer, a BPM engine, a rules engine configuration, or a spreadsheet someone maintains. Say so in the open questions rather than inventing a domain that is not there.
+If a whole repository looks like this, the domain may live elsewhere — in a sibling service, a stored-procedure layer, a BPM engine, a rules engine configuration, or a spreadsheet someone maintains. State that the repository does not establish the domain and record the evidence; do not invent a domain or ask the user to reconcile code inconsistencies.

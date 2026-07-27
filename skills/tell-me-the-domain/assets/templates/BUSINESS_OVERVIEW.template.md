@@ -1,8 +1,8 @@
 # [Product name] — What this system does
 
-> Reconstructed from the codebase at [commit / date]. Written for readers who do not work in the code.
-> Statements marked *(assumed)* were inferred from the implementation and have not been confirmed by anyone on the business side.
-> **Scope note:** [What was analyzed, what was sampled or excluded, and which questions need a human answer before relying on this overview.]
+> Reconstructed from the codebase at [commit / date]. This document describes observed behavior only. It does not infer intent or propose corrections.
+> Inconsistencies and ambiguities found in the code are recorded as observations with their evidence, not as questions for the reader to resolve.
+> **Scope note:** [What was analyzed, what was sampled or excluded, and which facts could not be established from the repository.]
 
 ## In one paragraph
 
@@ -16,11 +16,11 @@
 
 ## The main concepts
 
-Explain the four to eight ideas the business is built on. One short paragraph each — what it is, why it exists, what it connects to. Avoid the code's naming when the business uses a different word; use the business word and note the alias.
+Explain the four to eight ideas represented in the code. Use the code's observed terminology; if the interface and implementation use different names, record both without deciding which is correct.
 
 ### [Concept]
 
-[Definition in business terms. What it means for the product when one of these exists, changes, or disappears.]
+[Definition based on observed behavior. State what happens when one exists, changes, or disappears. Do not state why it exists unless the repository explicitly documents that reason.]
 
 ## How the value flows
 
@@ -66,8 +66,6 @@ The conditions the system enforces, in business language. Each states what is re
 
 > Watch out for: [terms that mean different things to different teams, or the same thing under two names].
 
-## What we still need to ask
+## What the code does not establish
 
-Questions the code cannot answer. Each one is addressed to whoever would know.
-
-1. **[Question]** — [Why it matters and what depends on the answer.] *(ask: [role])*
+Record only missing evidence, such as an external contract, an undocumented rationale, or an actor not represented in the repository. Do not ask the reader to reconcile inconsistencies found in the code; describe those inconsistencies in the relevant section above with their evidence.

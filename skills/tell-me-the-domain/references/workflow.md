@@ -11,7 +11,7 @@ Before reading anything, establish:
 - Anything they already know: the industry, the customer, the vocabulary. One sentence of context saves a lot of guessing.
 - A discovery budget: target one bounded context, 10–20 candidate files, and a small set of evidence-backed rules before expanding. In a large repository, "whole repo" means a structural map plus prioritized contexts, not exhaustive reading.
 
-If the scope is ambiguous and cheap to clarify, ask one question. Otherwise proceed and state your assumption in the output.
+If the scope is ambiguous and the answer cannot be determined from the repository, ask one question only when proceeding would make the documents misleading. Do not ask about incoherencies, contradictions, naming mismatches, or behavior that appears unexpected: record the observed variants and their evidence, then continue.
 
 Create the scratch file at `.tell-me-the-domain/notes.md` and begin.
 
@@ -56,7 +56,7 @@ Two shortcuts that repeatedly pay off:
 - **Tests are the specification the business actually agreed to.** Test names in a domain test file often read as a requirements list. Read those names before reading the implementation.
 - **Error messages and validation copy are business rules in plain language.** Grep the message catalogue or i18n files; they translate `ERR_LIMIT_4092` into something a human wrote for a human.
 
-For every rule you record, note: what it enforces, where (`path:line`), what happens when it is violated, and whether the *why* is documented anywhere or unknown. The unknowns become your open questions.
+For every rule or discrepancy you record, note what the code enforces, where (`path:line`), and what happens when it is violated. Record undocumented rationale as an observation of missing evidence, not as a question about what the system should do. If multiple locations disagree, document each behavior and the conflict directly.
 
 ## Phase 4 — Assemble the model
 
@@ -84,6 +84,6 @@ Calibrate the register:
 - `BUSINESS_OVERVIEW.md` must be readable by someone who has never seen the code. No file paths, no class names, no framework names. If a rule cannot be stated in business language, state its effect instead: not "`validateSlaWindow` throws after 48h" but "a claim not reviewed within two days is escalated automatically".
 - `TECHNICAL_DOMAIN_GUIDE.md` is for someone about to change something. Lead with where the domain lives and what will break if they touch it. Every rule gets its evidence reference.
 
-Both documents end with the open questions. Both state, near the top, the commit or date they were generated from — domain docs rot, and a reader deserves to know how much to trust them. For large or legacy repositories, also state the analyzed scope, excluded or sampled areas, discovery budget reached, confidence limits, and recommended next context.
+Both documents state the commit or date they were generated from and end with a section limited to information absent from the repository. Inconsistencies, contradictions, and ambiguous code belong in the relevant rules, risks, observations, or glossary sections, with evidence and no proposed correction. For large or legacy repositories, also state the analyzed scope, excluded or sampled areas, discovery budget reached, confidence limits, and recommended next context.
 
-Finally, tell the user in the chat: the two or three findings that would surprise a newcomer most, and the open questions that most need a human answer. Delete the scratch file unless they want to keep it.
+Finally, tell the user in the chat the two or three observed findings that would surprise a newcomer most. Mention open questions only when the repository lacks the necessary evidence; never ask the user to resolve an inconsistency found in the code. Delete the scratch file unless they want to keep it.

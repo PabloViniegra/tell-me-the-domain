@@ -1,7 +1,7 @@
 # [Product name] — Technical domain guide
 
-> Reconstructed from the codebase at [commit / date]. For consultants and developers about to change this system.
-> References point to `path/to/file.ext:line` as of that revision. Claims without a reference are inferences and are marked *(inferred)*.
+> Reconstructed from the codebase at [commit / date]. This guide describes observed behavior only.
+> References point to `path/to/file.ext:line` as of that revision. Do not infer expected behavior or propose corrections. Record inconsistencies, contradictions, and ambiguities as observations with their evidence.
 
 ## Orientation
 
@@ -23,7 +23,7 @@ graph TD
     B --> C[(Shared data)]
 ```
 
-[Where the boundaries are clean and where they leak. Leaks are where bugs and merge conflicts come from.]
+[Where the boundaries are clean and where they leak. Describe leaks as observed relationships or conflicting behavior, with evidence; do not infer which boundary is correct.]
 
 ## Model
 
@@ -59,7 +59,7 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 
 | Rule | Evidence | Failure mode | Rationale |
 |---|---|---|---|
-| [What must hold] | `path:line` | [Exception, HTTP status, silent fallback] | [Documented / *unknown*] |
+| [What must hold] | `path:line` | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
 
 ## Policies, constants and calculations
 
@@ -67,7 +67,7 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 |---|---|---|---|
 | [Threshold, rate, window] | [Value] | `path:line` | [Yes / hardcoded] |
 
-[Calculation logic worth understanding before touching it: rounding, precision, ordering of operations, currency handling.]
+[Calculation logic worth understanding before touching it: rounding, precision, ordering of operations, currency handling. Describe what is implemented, including divergent implementations, without selecting an intended one.]
 
 ## Permissions and visibility
 
@@ -97,7 +97,7 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 
 ## Risks and observations
 
-Things a newcomer should know before their first change. Facts and their consequences, not opinions about style.
+Things a newcomer should know before their first change. Facts and their direct consequences, not opinions about style or guesses about intended behavior. Include duplicated rules, conflicting implementations, naming mismatches, dead branches, and behavior enforced only in one layer.
 
 - **[Observation]** — `path:line`. [Why it is a risk: duplicated rule, rule enforced only in the interface, unbounded query, business logic in a migration, dead branch, etc.]
 
@@ -107,8 +107,8 @@ Things a newcomer should know before their first change. Facts and their consequ
 |---|---|---|---|
 | `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming] |
 
-## Open questions
+## Information absent from the repository
 
-Answerable only by a person. Each includes what depends on the answer.
+List only facts that cannot be established from the repository, such as invisible external contracts or undocumented rationale. Do not ask a human to resolve an observed inconsistency; record the competing behaviors in the relevant sections above.
 
-1. **[Question]** — [Context and evidence that raised it: `path:line`.] *(ask: [role])*
+1. **[Missing fact]** — [Evidence showing that the repository does not establish it: `path:line`.]

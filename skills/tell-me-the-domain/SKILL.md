@@ -11,7 +11,7 @@ metadata:
 
 A skill for newcomers who join a project without knowing the business behind it. Read the codebase as the written record of the business and turn it into two documents a newcomer can actually use.
 
-The code is the only source of truth that never lies about what the system *does* — but is silent about *why*. Treat extractions as observations, and be explicit about observed versus inferred.
+The code is the only source of truth for what the system does. Treat every extraction as an observation grounded in the repository. Do not infer business intent, expected behavior, or a correction to an inconsistency.
 
 ## When to use
 
@@ -29,12 +29,12 @@ Two files, written to `docs/` (or repo root if no `docs/`):
 | `BUSINESS_OVERVIEW.md` | Product owner, analyst, business-side newcomer | What the product does, for whom, the rules of the game, where the value lives |
 | `TECHNICAL_DOMAIN_GUIDE.md` | Consultant or developer about to touch the code | Where the domain lives, which modules own what, which invariants not to break, with `path:line` evidence |
 
-Both end with open questions. Both state the commit or date they were generated from. Templates live in `assets/templates/`.
+Both documents end with a section for facts the repository cannot establish, such as missing external contracts or undocumented rationale. Inconsistencies and ambiguities found in the code are recorded as observations in the documents, not turned into questions for the user. Both state the commit or date they were generated from. Templates live in `assets/templates/`.
 
 ## Hard rules
 
 - **Evidence over assumption.** Every non-obvious claim in the technical guide carries `path/to/file.ext:line`. Drop or hedge what you cannot back.
-- **Observed versus inferred.** Observed (guard clause, constraint) is fact. Inferred rationale is hedged ("appears to") and lives in open questions. Never promote an inference to a rule.
+- **Observed behavior only.** Document guards, constraints, transitions, calculations, permissions, naming mismatches, duplicated rules, unreachable branches, and conflicting evidence exactly as found. Do not mark expected behavior as fact and do not ask the user to resolve an inconsistency during discovery.
 - **Spend tokens where the domain is.** Configuration, generated code, vendored deps, scaffolding carry almost no business. Two hundred lines of a validator beat twenty files of glue.
 - **Write as you go.** Append findings to `.tell-me-the-domain/notes.md` immediately, with `path:line` and confidence. An interrupted run still leaves a trail.
 - **Name things the way the business names them.** A code/UI mismatch is itself a finding. The glossary is where a newcomer gets unstuck.
@@ -57,7 +57,7 @@ For large or legacy repos, apply `references/complexity-firewall.md` before deep
 
 - Write `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` to `docs/` (or repo root if no `docs/`).
 - Delete `.tell-me-the-domain/notes.md` unless the user asks to keep it.
-- Tell the user in chat: the two or three findings that would surprise a newcomer most, and the open questions that most need a human answer.
+- Tell the user in chat the two or three observed findings that would surprise a newcomer most. Mention only open questions caused by genuinely absent evidence; do not ask the newcomer to explain or resolve code inconsistencies.
 - For large or legacy repos, the deliverable must state what was covered, what was sampled or excluded, which tools were unavailable, and how a second pass should continue.
 
 ## References

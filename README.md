@@ -36,15 +36,21 @@ The skill follows a seven-phase workflow:
 ## Repository contents
 
 ```
-skills/tell-me-the-domain/
-├── SKILL.md                              # The skill definition (frontmatter + workflow)
-├── evidence-map.md                       # Where domain signals hide, by artifact type
-├── BUSINESS_OVERVIEW.template.md         # Output template for the business-side document
-├── TECHNICAL_DOMAIN_GUIDE.template.md    # Output template for the developer-side document
-└── tell-me-the-domain.skill              # Packaged skill (ZIP archive)
+tell-me-the-domain/
+├── AGENTS.md                                    # Project-level agent instructions (registers the skill)
+├── README.md                                    # This file
+└── skills/tell-me-the-domain/
+    ├── SKILL.md                                 # The skill definition (frontmatter + workflow)
+    ├── assets/
+    │   └── templates/
+    │       ├── BUSINESS_OVERVIEW.template.md    # Output template for the business-side document
+    │       └── TECHNICAL_DOMAIN_GUIDE.template.md # Output template for the developer-side document
+    └── references/
+        ├── workflow.md                          # Phases 0–6 in detail
+        ├── complexity-firewall.md               # Budget and stop conditions for large repos
+        ├── token-discipline.md                  # Exploration cost control
+        └── evidence-map.md                      # Where domain signals hide, by artifact type
 ```
-
-The `.skill` file bundles the same contents into a single archive for distribution to skill-compatible agents.
 
 ## Usage
 
@@ -74,7 +80,10 @@ Trigger it even when the request only mentions understanding, onboarding, or doc
 
 ## References
 
-- `skills/tell-me-the-domain/SKILL.md` — full skill definition.
-- `skills/tell-me-the-domain/evidence-map.md` — search patterns per artifact type and ecosystem.
-- `skills/tell-me-the-domain/BUSINESS_OVERVIEW.template.md` — structure for the business-side output.
-- `skills/tell-me-the-domain/TECHNICAL_DOMAIN_GUIDE.template.md` — structure for the developer-side output.
+- `skills/tell-me-the-domain/SKILL.md` — full skill definition (frontmatter + workflow).
+- `skills/tell-me-the-domain/references/workflow.md` — phases 0–6 in detail.
+- `skills/tell-me-the-domain/references/complexity-firewall.md` — budget and stop conditions for large repos.
+- `skills/tell-me-the-domain/references/token-discipline.md` — exploration cost control.
+- `skills/tell-me-the-domain/references/evidence-map.md` — search patterns per artifact type and ecosystem.
+- `skills/tell-me-the-domain/assets/templates/BUSINESS_OVERVIEW.template.md` — structure for the business-side output.
+- `skills/tell-me-the-domain/assets/templates/TECHNICAL_DOMAIN_GUIDE.template.md` — structure for the developer-side output.

@@ -59,7 +59,7 @@ Two shortcuts that repeatedly pay off:
 - **Tests are the specification the business actually agreed to.** Test names in a domain test file often read as a requirements list. Read those names before reading the implementation.
 - **Error messages and validation copy are business rules in plain language.** Grep the message catalogue or i18n files; they translate `ERR_LIMIT_4092` into something a human wrote for a human.
 
-For every rule or discrepancy you record, note what the code enforces, where (`path:line`), and what happens when it is violated. Record undocumented rationale as an observation of missing evidence, not as a question about what the system should do. If multiple locations disagree, document each behavior and the conflict directly.
+For every rule or discrepancy you record, note what the code enforces, where (`path:line`), and what happens when it is violated. Assign an initial confidence (`high` / `medium` / `low`) using the criterion in the technical template — this is what the deliverable will surface to the reader, so get it right during extraction. Record undocumented rationale as an observation of missing evidence, not as a question about what the system should do. If multiple locations disagree, document each behavior and the conflict directly.
 
 ## Phase 4 — Assemble the model
 

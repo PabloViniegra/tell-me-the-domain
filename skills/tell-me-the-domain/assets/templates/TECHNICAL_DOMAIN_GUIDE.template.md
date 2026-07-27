@@ -7,6 +7,8 @@
 
 [Two or three sentences: what the system does, what shape it is (single service, monorepo, modular monolith), and where the business logic actually lives versus where it merely passes through.]
 
+*Example:* *Acme Claims is a modular monolith with three deployables (portal, API, worker). The pricing logic lives entirely in `src/pricing/`; the rest is request routing, persistence, and presentation. Anything you change in `src/pricing/` needs a corresponding update to the per-insurer golden fixtures under `tests/fixtures/insurers/`.*
+
 **Discovery boundary:** [Contexts and deployables analyzed.] **Sampled or excluded:** [Areas intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, conflicting evidence, or recommended next context.]
 
 **Read these first:** `path/a.ext`, `path/b.ext`, `path/c.ext` — the three files that explain the most about the domain.
@@ -16,6 +18,10 @@
 | Bounded context / module | Path | Owns | Depends on |
 |---|---|---|---|
 | [Name] | `src/...` | [Concepts it is authoritative for] | [Other contexts] |
+
+*Example:*
+| *Pricing* | *`src/pricing/`* | *Fee schedules, rounding, currency conversion* | *Insurer registry (read-only)* |
+| *Claims lifecycle* | *`src/claims/`* | *Status transitions, reviewer assignment, deadlines* | *Pricing (read-only), Audit (writes)* |
 
 ```mermaid
 graph TD
@@ -36,6 +42,10 @@ erDiagram
 |---|---|---|---|
 | [Name] | `path:line` | [Natural or surrogate key] | [Aggregate root, value object, lifecycle owner] |
 
+*Example:*
+| *Claim* | *`src/claims/models.py:21`* | *Surrogate (`claim_id`); natural key is `(hospital_id, insurer_ref)`* | *Aggregate root; owns its Review and Payment rows.* |
+| *Reviewer* | *`src/accounts/models.py:55`* | *Surrogate (`user_id`)* | *Not an aggregate root; assigned to Claims via a join table.* |
+
 ## Lifecycles
 
 ```mermaid
@@ -49,6 +59,10 @@ stateDiagram-v2
 |---|---|---|---|
 | Draft → Active | `path:line` | [Condition] | [Error raised / behaviour] |
 
+*Example:*
+| *Submitted → In Review* | *`src/claims/service.py:142`* | *`reviewer_id is not None`* | *Raises `NoReviewerAssigned`; the API returns 409.* |
+| *In Review → Paid* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *Both the service-level guard and the DB CHECK* | *Service raises `PaymentBeforeReview` (422); DB rejects the UPDATE if the guard is bypassed.* |
+
 Transitions that are deliberately absent: [list them — knowing what is impossible is as useful as knowing what is possible].
 
 ## Invariants and business rules
@@ -57,9 +71,15 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 
 ### [Concept]
 
-| Rule | Evidence | Failure mode | Rationale |
-|---|---|---|---|
-| [What must hold] | `path:line` | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
+| Rule | Evidence | Confidence | Failure mode | Rationale |
+|---|---|---|---|---|
+| [What must hold] | `path:line` | [high / medium / low] | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
+
+*Confidence —* *high:* enforced by typed error + DB constraint + a test covering the violation. *medium:* enforced at one layer only (e.g., only at the API or only at the DB). *low:* observed convention in one place, no test, no second enforcement layer. Surface `low` rules explicitly so reviewers do not over-trust them.
+
+*Example:*
+| *A claim cannot move to Paid without a reviewer_id* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *high* | *Service raises `PaymentBeforeReview`; DB CHECK rejects the row UPDATE.* | *Stated in `docs/policies/audit.md:4`.* |
+| *A reviewer cannot approve claims from their own hospital* | *`src/accounts/policy.py:71`* | *medium* | *API returns 403; nothing in the DB layer re-checks this.* | *Not stated in the repository; inferred from the insurer contract in `docs/contracts/insurer-acme.md`.* |
 
 ## Policies, constants and calculations
 
@@ -97,9 +117,28 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 
 ## Risks and observations
 
-Things a newcomer should know before their first change. Facts and their direct consequences, not opinions about style or guesses about intended behavior. Include duplicated rules, conflicting implementations, naming mismatches, dead branches, and behavior enforced only in one layer.
+Things a newcomer should know before their first change. Facts and their direct consequences, not opinions about style or guesses about intended behavior. Tag each observation with a severity so readers can triage: *BLOCKER* (rule enforced in two layers that can diverge — fix before changing either side), *RISK* (hardcoded threshold, magic number, business logic in a migration — review carefully), *SMELL* (dead branch, naming confusion, observation without immediate action).
 
-- **[Observation]** — `path:line`. [Why it is a risk: duplicated rule, rule enforced only in the interface, unbounded query, business logic in a migration, dead branch, etc.]
+- **BLOCKER — [Observation]** — `path:line`. [Why it is a blocker: rule enforced in two layers that can diverge, etc.]
+- **RISK — [Observation]** — `path:line`. [Why it is a risk: hardcoded threshold, unbounded query, business logic in a migration, etc.]
+- **SMELL — [Observation]** — `path:line`. [Why it is a smell: dead branch, naming confusion, etc.]
+
+*Example:*
+
+- **BLOCKER — Claim status transitions are guarded in two places** — `src/claims/service.py:142` and `migrations/0042.sql:18`. The Python guard allows `Submitted → Rejected`; the DB constraint does not. Either side can be patched without the other noticing.
+- **RISK — Insurer fee schedules are committed as JSON in the repo** — `config/fees/insurer-acme.json:1`. A change requires a full deploy; there is no admin UI or feature flag. Hot-fixing a pricing bug takes a release cycle.
+- **SMELL — `legacy_submit()` in `src/claims/actions.py:204` is unreachable** — no caller exists in the current codebase. Either dead code or referenced from a script that was removed.
+
+### Terminology traps
+
+Naming mismatches between the code and the business. Each row names the trap, the two meanings, and where it shows up. List only traps that have caused or could cause a wrong business decision — not minor synonyms. Cross-reference `BUSINESS_OVERVIEW.md § Terminology traps` for the same entries in business language.
+
+| Code / UI term | Business meaning | Why it confuses | Defined at |
+|---|---|---|---|
+| [Term as it appears] | [What the business actually means] | [The wrong assumption] | `path:line` |
+
+*Example:*
+| *`submit_claim()`* | *Send to internal review* | *The function name suggests sending to the insurer; it only enqueues for Acme's internal review. See also BUSINESS_OVERVIEW.md § Terminology traps.* | `src/claims/actions.py:88` |
 
 ## Glossary (code ↔ business)
 
@@ -107,8 +146,16 @@ Things a newcomer should know before their first change. Facts and their direct 
 |---|---|---|---|
 | `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming] |
 
+*Example:*
+| *`ClaimStatus.PAID`* | *Paid* | *`src/claims/enums.py:7`* | *Same status name as the legacy Perl codebase, kept for audit-log continuity.* |
+| *`payout_amount_cents`* | *Net payout* | *`src/payments/models.py:33`* | *Field stored in cents; UI shows dollars. Watch for off-by-100 bugs when reading the value back.* |
+
 ## Information absent from the repository
 
 List only facts that cannot be established from the repository, such as invisible external contracts or undocumented rationale. Do not ask a human to resolve an observed inconsistency; record the competing behaviors in the relevant sections above.
 
 1. **[Missing fact]** — [Evidence showing that the repository does not establish it: `path:line`.]
+
+*Example:*
+1. *Who negotiates the per-insurer fee schedule — product or finance? The code reads schedules from `config/fees/` but nothing in the repository identifies the owner or the cadence.*
+2. *What is the contractual SLA with each insurer after the 48h internal review window expires? The code escalates to a human but does not record what the insurer is then obligated to do.*

@@ -1,6 +1,6 @@
 # tell-me-the-domain
 
-[![skills.sh](https://skills.sh/badge.svg)](https://skills.sh/PabloViniegra/tell-me-the-domain)
+[![skills.sh](https://skills.sh/b/PabloViniegra/tell-me-the-domain)](https://skills.sh/PabloViniegra/tell-me-the-domain)
 
 A reusable agent skill for reconstructing the business domain of an unfamiliar codebase. It reads the repository as the only source of truth that never lies about what the system *does*, and turns it into two documents a newcomer can actually use.
 

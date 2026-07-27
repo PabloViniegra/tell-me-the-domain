@@ -48,6 +48,7 @@ Create the scratch file and begin.
 
 Build a map before opening any implementation file. All of this is high signal per token:
 
+0. **Project map and dependency overview.** If structural-analysis tools are available (Graphify, knowledge-graph builders, AST-based explorers), use them first to produce the structural map and the call/import graph. What calls what and what depends on what arrive as a compact graph instead of a flood of file reads. If absent, fall back to the items below.
 1. **Directory shape**, two or three levels deep, excluding `node_modules`, `vendor`, `dist`, `target`, `.git`. Domain-oriented folder names (`orders/`, `underwriting/`, `payroll/`) are a gift; layer-oriented names (`controllers/`, `services/`) mean the domain hides one level down, inside file names.
 2. **README, docs folder, ADRs, CHANGELOG.** Often the only place the *why* survives. Skim, do not read line by line.
 3. **Manifests** (`package.json`, `go.mod`, `pyproject.toml`, `pom.xml`, `*.csproj`, `Gemfile`). Dependencies name the business: a payments SDK, a tax engine, an EDI parser, a scheduling library each imply a whole problem space.

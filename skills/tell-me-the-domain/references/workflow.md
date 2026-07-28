@@ -31,6 +31,8 @@ Build a map before opening any implementation file. All of this is high signal p
 
 Record in the notes: candidate bounded contexts, the entity vocabulary, and 10–20 files that look like they hold domain logic. Rank them; you will not read all of them.
 
+**Empty or greenfield repos.** If reconnaissance surfaces no domain artifacts — no data models, no business-facing routes, no migrations, no test names that read as requirements — the repository does not establish a domain yet. Surface that finding to the user and stop. Do not invent a domain to fill the documents; `references/evidence-map.md` § 11 ("Signals that the domain is not here") lists what counts as an absence signal.
+
 ## Phase 2 — Locate the domain core
 
 The core is where the rules concentrate. Rank candidates by these signals, cheapest first:
@@ -41,7 +43,7 @@ The core is where the rules concentrate. Rank candidates by these signals, cheap
 - Directories with the densest test coverage. Teams test what they are afraid of breaking, and what they are afraid of breaking is the business.
 - Churn, if git history is available: `git log --format= --name-only -n 400 | sort | uniq -c | sort -rn | head -40`. Frequently changed domain files mean rules that are still evolving.
 
-Pick the three to seven modules that survive this ranking. That is the core. Everything else is delivery mechanism, and you can describe it in a sentence.
+Rank every module with non-trivial business logic; the core is whatever survives the ranking — typically 3–7 modules in a small service with one bounded context, but 15–25 or more in a monorepo with several. Modules ranked below the core are not automatically excluded: any module that owns a distinct concept, lifecycle, calculation, or permission stays in the model. Describe the core in depth and reference the rest in one paragraph each, so the deliverable covers the whole business, not a slice of it.
 
 ## Phase 3 — Harvest the rules
 
@@ -60,6 +62,18 @@ Two shortcuts that repeatedly pay off:
 - **Error messages and validation copy are business rules in plain language.** Grep the message catalogue or i18n files; they translate `ERR_LIMIT_4092` into something a human wrote for a human.
 
 For every rule or discrepancy you record, note what the code enforces, where (`path:line`), and what happens when it is violated. Assign an initial confidence (`high` / `medium` / `low`) using the criterion in the technical template — this is what the deliverable will surface to the reader, so get it right during extraction. Record undocumented rationale as an observation of missing evidence, not as a question about what the system should do. If multiple locations disagree, document each behavior and the conflict directly.
+
+### Phase 3b — Coverage gate (mandatory before assembly)
+
+The business cannot be learned partially — every meaningful concept, lifecycle, rule, and permission must reach a newcomer, or their mental model is wrong. Before moving to assembly, verify against the notes file that:
+
+- **Glossary** — every domain term encountered (schema columns, status enums, error names, test names, UI labels) appears with its synonym, homonym, and where it is defined.
+- **Lifecycles** — every entity with a status field, transition code, or past-tense event has its legal and illegal transitions recorded.
+- **Invariants** — every guard, validator, custom exception, DB constraint, and role check is in the invariant table with evidence and confidence.
+- **Calculations** — every hardcoded threshold, magic number, rounding rule, and pricing formula is in the policy table with location and config status.
+- **Permissions** — every actor, role, and tenant-scoping rule is recorded with the operations they enable and where it is enforced.
+
+If any line is incomplete, expand the notes before assembly. Coverage gaps and the reason for them surface in the discovery boundary of the technical guide so the reader knows what was deliberately deferred.
 
 ## Phase 4 — Assemble the model
 
@@ -80,13 +94,20 @@ Then close honestly. List what you could not determine: rules with no discoverab
 
 ## Phase 6 — Write the documents
 
-Fill `assets/templates/BUSINESS_OVERVIEW.template.md` and `assets/templates/TECHNICAL_DOMAIN_GUIDE.template.md`, then write both files to the target directory.
+Fill the relevant templates and write to `docs/` (or repo root if no `docs/`):
+
+- `assets/templates/BUSINESS_OVERVIEW.template.md` → `BUSINESS_OVERVIEW.md` (always)
+- `assets/templates/TECHNICAL_DOMAIN_GUIDE.template.md` → `TECHNICAL_DOMAIN_GUIDE.md` (always)
+- `assets/templates/BOUNDED_CONTEXT.template.md` → `domains/<context>.md` (one per bounded context, only when the domain spans several)
+
+Every overview file links to every per-context file, and every per-context file's "Related contexts" links back, so the reader can navigate the domain by its parts.
 
 Calibrate the register:
 
 - `BUSINESS_OVERVIEW.md` must be readable by someone who has never seen the code. No file paths, no class names, no framework names. If a rule cannot be stated in business language, state its effect instead: not "`validateSlaWindow` throws after 48h" but "a claim not reviewed within two days is escalated automatically".
 - `TECHNICAL_DOMAIN_GUIDE.md` is for someone about to change something. Lead with where the domain lives and what will break if they touch it. Every rule gets its evidence reference.
+- Per-context `domains/<context>.md` matches the register of `BUSINESS_OVERVIEW.md`; the "Related contexts" section is the navigation layer.
 
-Both documents state the commit or date they were generated from and end with a section limited to information absent from the repository. Inconsistencies, contradictions, and ambiguous code belong in the relevant rules, risks, observations, or glossary sections, with evidence and no proposed correction. For large or legacy repositories, also state the analyzed scope, excluded or sampled areas, discovery budget reached, confidence limits, and recommended next context.
+Both overview documents state the commit or date they were generated from and end with a section limited to information absent from the repository. Inconsistencies, contradictions, and ambiguous code belong in the relevant rules, risks, observations, or glossary sections, with evidence and no proposed correction. For large or legacy repositories, also state the analyzed scope, excluded or sampled areas, discovery budget reached, confidence limits, and recommended next context.
 
-Finally, tell the user in the chat the two or three observed findings that would surprise a newcomer most, and surface the same findings in both documents under "Three things that would surprise a newcomer" so they persist beyond the session. Mention open questions only when the repository lacks the necessary evidence; never ask the user to resolve an inconsistency found in the code. Delete the scratch file unless they want to keep it.
+Finally, hard cap of three observed findings: tell the user in the chat up to three findings that would surprise a newcomer most, and surface the same findings in both overview documents under "Three things that would surprise a newcomer" so they persist beyond the session. Mention open questions only when the repository lacks the necessary evidence; never ask the user to resolve an inconsistency found in the code. Delete the scratch file unless they want to keep it.

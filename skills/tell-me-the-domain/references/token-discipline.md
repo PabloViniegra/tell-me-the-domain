@@ -10,5 +10,5 @@ Exploration is where this skill can waste an enormous amount of context. These r
 - Append to the notes file immediately after each read, including evidence type, confidence, and the next search. The note replaces the source.
 - Work context by context in a monorepo, finishing one before starting the next. Keep raw subagent output out of the main context; require compact findings with references.
 - Stop at saturation, budget exhaustion, or unresolved boundary ambiguity. Report the stopping reason instead of silently broadening scope.
-- If three consecutive files add no new concept or rule, stop that branch. Breadth of concepts beats depth on any single module — a newcomer needs the map, not the terrain.
+- If three consecutive files add no new concept or rule, stop that branch. A newcomer needs both the complete map and enough terrain on each module to act — partial coverage leaves the mental model wrong. Match depth to the domain: skim nothing the business requires, saturate on the concepts that drive the value, and pass the coverage gate from `references/workflow.md` before writing.
 - If subagents are available, fan out one per bounded context, and require each to return only: scope, concepts, rules with references, confidence, conflicts, exclusions, and open questions. Raw exploration never enters the main context.

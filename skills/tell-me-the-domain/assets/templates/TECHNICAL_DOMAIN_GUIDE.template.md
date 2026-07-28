@@ -174,6 +174,17 @@ Naming mismatches between the code and the business. Each row names the trap, th
 | *`ClaimStatus.PAID`* | *Paid* | *`src/claims/enums.py:7`* | *Same status name as the legacy Perl codebase, kept for audit-log continuity.* |
 | *`payout_amount_cents`* | *Net payout* | *`src/payments/models.py:33`* | *Field stored in cents; UI shows dollars. Watch for off-by-100 bugs when reading the value back.* |
 
+## Related contexts
+
+When the domain spans several bounded contexts, a per-context file is generated for each in `domains/`. This guide lists every one, and every per-context file's "Related contexts" links back here. Update both directions: omitting the link breaks navigation for the reader.
+
+| Context | File | Relationship |
+|---|---|---|
+| [Name] | [`domains/<other>.md`](domains/<other>.md) | [Reads from / writes to / triggered by / …] |
+| Business overview | [`BUSINESS_OVERVIEW.md`](BUSINESS_OVERVIEW.md) | Per-context files cross-link here for product-wide rules and the "Three things that would surprise a newcomer". |
+
+If the product has only one context, replace this section with: *"This product is a single bounded context; no per-context files are produced."*
+
 ## Information absent from the repository
 
 List only facts that cannot be established from the repository, such as invisible external contracts or undocumented rationale. Do not ask a human to resolve an observed inconsistency; record the competing behaviors in the relevant sections above.

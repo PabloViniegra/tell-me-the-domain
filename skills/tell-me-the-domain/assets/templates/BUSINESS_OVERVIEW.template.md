@@ -2,7 +2,7 @@
 
 > Reconstructed from the codebase at [commit / date]. This document describes observed behavior only. It does not infer intent or propose corrections.
 > Inconsistencies and ambiguities found in the code are recorded as observations with their evidence, not as questions for the reader to resolve.
-> **Scope note:** [What was analyzed, what was sampled or excluded, and which facts could not be established from the repository.]
+> **Discovery boundary:** [Bounded contexts and products analyzed.] **Sampled or excluded:** [Areas intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, or facts that could not be established from the repository.]
 
 ## Three things that would surprise a newcomer
 
@@ -142,6 +142,17 @@ Cross-team vocabulary mismatches observed in the code. Each row names the trap, 
 *Example:*
 | *"Submit" (button label)* | *"Send to internal review"* | *The UI says "Submit" but `submit_claim()` only moves the claim into Acme's review queue — it does not send anything to the insurer. Billers regularly believe they have filed with the insurer when they have not.* | `src/claims/actions.py:88` |
 | *"Reject" (in code)* | *"Return to biller with reason"* | *The code raises `ClaimRejected` for both internal-review rejections and insurer rejections. The downstream email template treats them identically, which is wrong in the second case.* | `src/claims/exceptions.py:14`, `templates/rejection_email.*:7` |
+
+## Related contexts
+
+When the domain spans several bounded contexts, a per-context file is generated for each in `domains/`. This overview lists every one, and every per-context file's "Related contexts" links back here. Update both directions: omitting the link breaks navigation for the reader.
+
+| Context | File | Relationship |
+|---|---|---|
+| [Name] | [`domains/<other>.md`](domains/<other>.md) | [Reads from / writes to / triggered by / …] |
+| Code map | [`TECHNICAL_DOMAIN_GUIDE.md`](TECHNICAL_DOMAIN_GUIDE.md) | The `path:line` evidence for every claim in this document lives there. |
+
+If the product has only one context, replace this section with: *"This product is a single bounded context; no per-context files are produced."*
 
 ## What the code does not establish
 

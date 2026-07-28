@@ -31,13 +31,49 @@
 
 ## The main concepts
 
-Explain the four to eight ideas represented in the code. Use the code's observed terminology; if the interface and implementation use different names, record both without deciding which is correct.
+The four to eight ideas that organize the product. **Do not settle for a one-line definition per concept.** For each one, the section must be deep enough that a newcomer can answer four questions without rereading the code: *what is this thing, what does it look like in this product, what happens when it changes or disappears, and what would a newcomer get wrong without it?* If any of those four is missing, the subsection is not done.
+
+Length here is not a constraint — depth is the deliverable. A glossary of one-liners belongs at the end of the document; this section is where the model gets built.
+
+Cover for each concept:
+
+- A definition grounded in observed behavior, not inferred intent.
+- Its attributes and shape, using the terminology the code actually uses. If the UI, the docs, and the database use different names for the same thing, record all of them without deciding which is correct.
+- Its relationships with the other concepts in this section, named specifically (one-to-many, belongs-to, triggers, blocks) — never "related to". Quote the relationship the way the code states it.
+- The business processes it participates in, end to end, with the actors involved and the outcome of each participation. A process is not a CRUD operation; it is a workflow with a non-trivial business meaning.
+- A short "why a newcomer must understand it" — the decisions a new joiner will make in their first weeks that pivot on this concept. This is what turns a definition into a mental model.
+
+Use the code's observed terminology. If the interface and the implementation use different names, record both. If the codebase hides a concept the docs never name (a column, a status, a service that does not appear in any spec), surface it here anyway — its absence from the docs is the bug.
 
 ### [Concept]
 
-[Definition based on observed behavior. State what happens when one exists, changes, or disappears. Do not state why it exists unless the repository explicitly documents that reason.]
+**What it is.** [Definition based on observed behavior. State what a fresh instance looks like, what changes about it over time, and what happens if it disappears from the system. Do not state why it exists unless the repository explicitly documents that reason.]
 
-*Example — Claim.* *A request for reimbursement sent by a hospital to an insurer. It has a status (Draft, Submitted, In Review, Paid, Rejected), a 48h review deadline, and a single reviewer assigned. If rejected, it returns to Draft; if paid, it is archived and surfaces in the hospital's monthly invoice.*
+**Attributes and shape.** [The fields, states, components, or invariants it carries. Use the names the code uses; if the UI or the business language uses different ones, record both. State units, ranges, and enums verbatim.]
+
+**Relationships with other concepts.** [For each related concept, name the relationship specifically and what it means in business terms: an order has many line items, a claim belongs to exactly one hospital and one insurer, a reviewer is assigned to many claims at once. Avoid generic "related to" — be specific. Note which relationships are asymmetric, which are optional, and which the code enforces vs. merely implies.]
+
+**Processes it participates in.** [The business workflows, transitions, or use cases where this concept appears. For each, name the actor, the trigger, and the outcome. If the concept has a lifecycle, describe each transition and who moves it forward; if it is passive, describe the events that read or write it and how the business sees those events. Do not collapse this into a CRUD list — processes are why the concept earns a row in the model.]
+
+**Why a newcomer must understand it.** [What decisions a new joiner will make in their first weeks that depend on this concept, and what they will get wrong without the mental model. Frame this in business terms, not code terms.]
+
+*Example — Claim.*
+
+*What it is.* A request for reimbursement a hospital sends to an insurer. Each Claim starts as a draft, moves through review, and ends either paid or rejected. After rejection it is not edited in place — a new Claim is filed with corrections — so the lifecycle is forward-only with rejection as a terminal state that may seed a successor.
+
+*Attributes and shape.* A status (Draft, Submitted, In Review, Paid, Rejected), a hospital, an insurer reference, a 48-hour review deadline measured from the moment the reviewer is assigned, a single reviewer assigned for the duration of the claim, and a monetary amount stored in cents and rendered as dollars in the UI. The status field drives nearly every branch in the system; "Rejected" is two distinct enum values that downstream code treats differently (see § Terminology traps).
+
+*Relationships with other concepts.* A Claim belongs to exactly one Hospital and one Insurer (the natural key is `(hospital_id, insurer_ref)`; the surrogate is `claim_id`). It has zero or one assigned Reviewer (mandatory once Submitted; never swapped after Paid). It owns zero or many ReviewEvents — append-only records of who did what and when. On Paid, it generates exactly one Payment and exactly one line on the Hospital's monthly Invoice. On Rejected, it does not mutate itself: a new Claim is filed with corrections, and the original Claim is archived for audit. A Claim never references a Payment or Invoice directly — those reference the Claim.
+
+*Processes it participates in.*
+
+- *Submission* — a Hospital biller files the Claim from the portal; the system assigns a Reviewer and starts the 48h clock.
+- *Review* — the assigned Reviewer moves the Claim from Submitted to In Review to Paid or Rejected within 48h; missing the deadline escalates to a human but does not auto-decide.
+- *Payout* — on Paid, the Claim triggers a Payment and a line on the Hospital's monthly Invoice; the Insurer is paid per-claim.
+- *Contention* — on Rejected, the Claim returns to the biller with the rejection reason attached; a new Claim may be filed with corrections.
+- *Audit* — every status transition writes a ReviewEvent; the Claim is the root of the audit trail.
+
+*Why a newcomer must understand it.* Almost every feature in the product — pricing, deadlines, notifications, audit logs, monthly invoicing — pivots on the Claim's status. A bug in any of those features is, more often than not, a bug in how a status is interpreted. New joiners should expect to read code that branches on `ClaimStatus` more often than on any other value, and should design new features by asking first: "which Claim statuses does this feature apply to, and which must it never touch?"
 
 ## How the value flows
 

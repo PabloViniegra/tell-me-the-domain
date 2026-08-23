@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/PabloViniegra/tell-me-the-domain/evals/schemas/oracle.schema.json",
+  "title": "tell-me-the-domain oracle",
+  "type": "object",
+  "required": ["case_id", "facts"],
+  "properties": {
+    "case_id": { "type": "string" },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "importance", "statement", "required_terms", "expected_in"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "concept",
+              "process",
+              "rule",
+              "lifecycle",
+              "permission",
+              "calculation",
+              "integration",
+              "time",
+              "terminology",
+              "conflict",
+              "absent",
+              "output",
+              "ownership",
+              "configuration",
+              "audit"
+            ]
+          },
+          "importance": { "type": "string", "enum": ["critical", "important", "incidental"] },
+          "statement": { "type": "string" },
+          "required_terms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1
+          },
+          "expected_in": { "type": "string", "enum": ["business", "technical", "both"] },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path"],
+              "properties": {
+                "path": { "type": "string" },
+                "lines": { "type": "array", "items": { "type": "integer" } }
+              }
+            }
+          },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}

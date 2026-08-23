@@ -1,0 +1,7 @@
+{
+  "cases": [
+    { "amount_cents": 10000, "expected_price_cents": 9750 },
+    { "amount_cents": 12345, "expected_price_cents": 12036 },
+    { "amount_cents": 0, "expected_price_cents": 0 }
+  ]
+}

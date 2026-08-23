@@ -1,0 +1,118 @@
+{
+  "case_id": "S01-single-context",
+  "facts": [
+    {
+      "id": "C-001",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "Claim is the central aggregate with a status lifecycle.",
+      "required_terms": ["Claim"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/claims/models.py", "lines": [8]}]
+    },
+    {
+      "id": "C-002",
+      "kind": "concept",
+      "importance": "important",
+      "statement": "Reviewer is an actor who must be assigned before a claim can be paid.",
+      "required_terms": ["Reviewer"],
+      "expected_in": "both"
+    },
+    {
+      "id": "R-001",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "A claim cannot be paid without an assigned reviewer.",
+      "required_terms": ["reviewer", "paid"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/claims/service.py", "lines": [21, 25]}, {"path": "migrations/001_init.sql", "lines": [10]}]
+    },
+    {
+      "id": "R-002",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "A claim must be in review before it can be paid.",
+      "required_terms": ["review", "paid"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/claims/service.py", "lines": [23]}]
+    },
+    {
+      "id": "R-003",
+      "kind": "calculation",
+      "importance": "critical",
+      "statement": "Review deadline is 48 hours after submission.",
+      "required_terms": ["48"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/claims/service.py", "lines": [7, 21]}]
+    },
+    {
+      "id": "R-004",
+      "kind": "calculation",
+      "importance": "important",
+      "statement": "Monetary amounts are stored in cents.",
+      "required_terms": ["cents"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/claims/models.py", "lines": [14]}, {"path": "migrations/001_init.sql", "lines": [6]}]
+    },
+    {
+      "id": "R-005",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "Each claim is identified by (hospital_id, insurer_ref).",
+      "required_terms": ["hospital", "insurer"],
+      "expected_in": "business",
+      "evidence": [{"path": "src/claims/models.py", "lines": [11, 12]}]
+    },
+    {
+      "id": "L-001",
+      "kind": "lifecycle",
+      "importance": "critical",
+      "statement": "Lifecycle states are DRAFT, SUBMITTED, IN_REVIEW, PAID, REJECTED.",
+      "required_terms": ["DRAFT", "SUBMITTED", "IN_REVIEW", "PAID", "REJECTED"],
+      "expected_in": "technical",
+      "evidence": [{"path": "src/claims/enums.py", "lines": [4, 8]}]
+    },
+    {
+      "id": "R-006",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "The paid-requires-reviewer rule is enforced at both the service layer and the database CHECK.",
+      "required_terms": ["paid", "reviewer", "service", "check"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "P-001",
+      "kind": "process",
+      "importance": "important",
+      "statement": "Submission assigns Submitted and starts the review clock.",
+      "required_terms": ["submit", "submitted"],
+      "expected_in": "business",
+      "evidence": [{"path": "src/claims/service.py", "lines": [11]}]
+    },
+    {
+      "id": "P-002",
+      "kind": "process",
+      "importance": "important",
+      "statement": "Review moves a claim to In Review once a reviewer is assigned.",
+      "required_terms": ["reviewer", "IN_REVIEW"],
+      "expected_in": "business",
+      "evidence": [{"path": "src/claims/service.py", "lines": [17]}]
+    },
+    {
+      "id": "T-001",
+      "kind": "terminology",
+      "importance": "important",
+      "statement": "REJECTED is a terminal status; the system does not edit a rejected claim in place.",
+      "required_terms": ["REJECTED"],
+      "expected_in": "both"
+    },
+    {
+      "id": "F-001",
+      "kind": "absent",
+      "importance": "incidental",
+      "statement": "Customer counts, commercial pricing, and ownership are not established by the repository.",
+      "required_terms": ["not established"],
+      "expected_in": "both"
+    }
+  ]
+}

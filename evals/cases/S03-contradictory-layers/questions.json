@@ -1,0 +1,10 @@
+[
+  {
+    "question": "How long do customers have to request a refund?",
+    "must_contain": ["30", "14"]
+  },
+  {
+    "question": "Do the source code, the database constraint, and the tests agree on the refund window?",
+    "must_contain": ["30", "14"]
+  }
+]

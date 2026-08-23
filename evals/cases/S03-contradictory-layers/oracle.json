@@ -1,0 +1,48 @@
+{
+  "case_id": "S03-contradictory-layers",
+  "facts": [
+    {
+      "id": "R-201",
+      "kind": "conflict",
+      "importance": "critical",
+      "statement": "Three layers disagree on the refund window: the service code says 30 days, the database CHECK says 14 days, and the tests assert the 30-day behavior.",
+      "required_terms": ["30", "14"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "R-202",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "The service-layer guard enforces a 30-day refund window.",
+      "required_terms": ["30", "service"],
+      "expected_in": "technical",
+      "evidence": [{"path": "src/refunds/service.py", "lines": [3, 11]}]
+    },
+    {
+      "id": "R-203",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "The database CHECK enforces a 14-day refund window.",
+      "required_terms": ["14", "database"],
+      "expected_in": "technical",
+      "evidence": [{"path": "migrations/001_refunds.sql", "lines": [7]}]
+    },
+    {
+      "id": "R-204",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "The tests assert the 30-day service behavior.",
+      "required_terms": ["30", "test"],
+      "expected_in": "technical",
+      "evidence": [{"path": "tests/test_refunds.py", "lines": [1, 9]}]
+    },
+    {
+      "id": "C-201",
+      "kind": "concept",
+      "importance": "important",
+      "statement": "A refund is a request to return a previously processed payment.",
+      "required_terms": ["refund"],
+      "expected_in": "business"
+    }
+  ]
+}

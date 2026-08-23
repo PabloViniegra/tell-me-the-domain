@@ -1,0 +1,45 @@
+{
+  "case_id": "S02-rule-in-fixture",
+  "facts": [
+    {
+      "id": "R-101",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "Pricing uses a per-insurer fee rate that lives in configuration, not in code.",
+      "required_terms": ["insurer", "fee"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "R-102",
+      "kind": "calculation",
+      "importance": "critical",
+      "statement": "The Acme insurer fee is 2.5 percent of the claim amount.",
+      "required_terms": ["2.5"],
+      "expected_in": "both"
+    },
+    {
+      "id": "R-103",
+      "kind": "calculation",
+      "importance": "critical",
+      "statement": "Pricing rounds using the half_up rule configured per insurer.",
+      "required_terms": ["half_up"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "F-101",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "The repository does not show who owns the per-insurer fee schedules or how they are updated.",
+      "required_terms": ["not established"],
+      "expected_in": "business"
+    },
+    {
+      "id": "C-101",
+      "kind": "concept",
+      "importance": "important",
+      "statement": "Per-insurer configuration files are authoritative for rate and rounding rule.",
+      "required_terms": ["insurer", "configuration"],
+      "expected_in": "both"
+    }
+  ]
+}

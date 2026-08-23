@@ -1,0 +1,14 @@
+[
+  {
+    "question": "What fee percentage does the Acme insurer use?",
+    "must_contain": ["2.5"]
+  },
+  {
+    "question": "Where is the per-insurer fee rate stored?",
+    "must_contain": ["insurer", "configuration"]
+  },
+  {
+    "question": "Does the code itself contain the fee rate?",
+    "must_contain": ["not established"]
+  }
+]

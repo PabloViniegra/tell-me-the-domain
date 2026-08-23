@@ -1,0 +1,22 @@
+[
+  {
+    "question": "How long does a reviewer have to act on a submitted claim?",
+    "must_contain": ["48"]
+  },
+  {
+    "question": "Can a claim be paid before a reviewer is assigned?",
+    "must_contain": ["reviewer", "paid"]
+  },
+  {
+    "question": "What unit is used to store monetary amounts?",
+    "must_contain": ["cents"]
+  },
+  {
+    "question": "What states can a claim be in?",
+    "must_contain": ["DRAFT", "SUBMITTED", "IN_REVIEW", "PAID", "REJECTED"]
+  },
+  {
+    "question": "Who can approve a claim?",
+    "must_contain": ["Reviewer"]
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "case_id": "S05-multi-tenant-scoping",
+  "facts": [
+    {
+      "id": "C-401",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "Tickets are tenant-scoped; each tenant sees only its own rows.",
+      "required_terms": ["tenant"],
+      "expected_in": "both"
+    },
+    {
+      "id": "T-401",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "Tenant identity is on the ticket row as a tenant_id column.",
+      "required_terms": ["tenant_id"],
+      "expected_in": "both"
+    },
+    {
+      "id": "R-401",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "list_tickets filters by tenant_id in the WHERE clause.",
+      "required_terms": ["list_tickets", "tenant_id"],
+      "expected_in": "technical",
+      "evidence": [{"path": "src/tickets/service.py", "lines": [4]}]
+    },
+    {
+      "id": "R-402",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "list_tickets_unsafe returns rows across all tenants — must not be used.",
+      "required_terms": ["list_tickets_unsafe", "tenant"],
+      "expected_in": "technical",
+      "evidence": [{"path": "src/tickets/service.py", "lines": [11]}]
+    },
+    {
+      "id": "P-401",
+      "kind": "permission",
+      "importance": "important",
+      "statement": "Tenant scoping is implicit in queries, not enforced by an authentication layer in this repo.",
+      "required_terms": ["scope", "tenant"],
+      "expected_in": "both"
+    },
+    {
+      "id": "F-401",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "Authentication and JWT verification are not part of this repository.",
+      "required_terms": ["not established"],
+      "expected_in": "business"
+    }
+  ]
+}

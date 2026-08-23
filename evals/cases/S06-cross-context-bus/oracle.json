@@ -1,0 +1,53 @@
+{
+  "case_id": "S06-cross-context-bus",
+  "facts": [
+    {
+      "id": "C-501",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "There is a billing context and a notifications context in this repository.",
+      "required_terms": ["billing", "notifications"],
+      "expected_in": "both"
+    },
+    {
+      "id": "E-501",
+      "kind": "integration",
+      "importance": "critical",
+      "statement": "Billing publishes InvoicePaid; notifications consumes it.",
+      "required_terms": ["InvoicePaid"],
+      "expected_in": "both"
+    },
+    {
+      "id": "R-501",
+      "kind": "integration",
+      "importance": "critical",
+      "statement": "The shared payload must contain invoice_id, tenant_id, amount_cents, paid_at.",
+      "required_terms": ["invoice_id", "tenant_id", "amount_cents", "paid_at"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "T-501",
+      "kind": "terminology",
+      "importance": "important",
+      "statement": "The two contexts agree on field names; renaming one without coordination would break notifications.",
+      "required_terms": ["payload"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "E-502",
+      "kind": "integration",
+      "importance": "important",
+      "statement": "Events with detail_type other than InvoicePaid are explicitly ignored by the notifications handler.",
+      "required_terms": ["ignored"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "F-501",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "There is no formal schema or contract document for the cross-context event in this repository.",
+      "required_terms": ["not established"],
+      "expected_in": "business"
+    }
+  ]
+}

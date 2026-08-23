@@ -1,0 +1,54 @@
+{
+  "case_id": "S04-async-events-only",
+  "facts": [
+    {
+      "id": "C-301",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "Order state lives in the event log, not in a status column.",
+      "required_terms": ["event", "order"],
+      "expected_in": "both"
+    },
+    {
+      "id": "E-301",
+      "kind": "lifecycle",
+      "importance": "critical",
+      "statement": "Past-tense events are OrderPlaced, OrderShipped, OrderCancelled.",
+      "required_terms": ["OrderPlaced", "OrderShipped", "OrderCancelled"],
+      "expected_in": "both"
+    },
+    {
+      "id": "R-301",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "An order must have at least one item to be placed.",
+      "required_terms": ["items", "order"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/orders/service.py", "lines": [16]}]
+    },
+    {
+      "id": "R-302",
+      "kind": "integration",
+      "importance": "critical",
+      "statement": "Domain events are published to an AWS EventBridge bus named 'orders-events'.",
+      "required_terms": ["EventBridge", "orders-events"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "R-303",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "Shipping or canceling an order that was never placed raises a DomainError.",
+      "required_terms": ["ship", "place"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "F-301",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "Downstream projection of the event log into a read model is not in the repository.",
+      "required_terms": ["not established"],
+      "expected_in": "business"
+    }
+  ]
+}

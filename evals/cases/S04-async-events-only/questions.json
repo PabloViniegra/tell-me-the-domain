@@ -1,0 +1,14 @@
+[
+  {
+    "question": "Where does the order lifecycle live?",
+    "must_contain": ["event"]
+  },
+  {
+    "question": "What events does the order service publish?",
+    "must_contain": ["OrderPlaced", "OrderShipped", "OrderCancelled"]
+  },
+  {
+    "question": "Which event bus is used?",
+    "must_contain": ["EventBridge"]
+  }
+]

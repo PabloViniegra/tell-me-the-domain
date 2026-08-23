@@ -1,0 +1,14 @@
+[
+  {
+    "question": "Which two contexts collaborate through events in this repo?",
+    "must_contain": ["billing", "notifications"]
+  },
+  {
+    "question": "What event does billing emit and notifications consume?",
+    "must_contain": ["InvoicePaid"]
+  },
+  {
+    "question": "What fields must the shared payload contain?",
+    "must_contain": ["invoice_id", "tenant_id", "amount_cents", "paid_at"]
+  }
+]

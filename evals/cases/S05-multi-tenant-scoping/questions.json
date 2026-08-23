@@ -1,0 +1,10 @@
+[
+  {
+    "question": "How does the system ensure tenants only see their own tickets?",
+    "must_contain": ["tenant_id"]
+  },
+  {
+    "question": "Is there a function that returns tickets across tenants?",
+    "must_contain": ["list_tickets_unsafe"]
+  }
+]

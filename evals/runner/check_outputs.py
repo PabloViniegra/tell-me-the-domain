@@ -169,6 +169,7 @@ DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 MODE_BLOCKQUOTE_RE = re.compile(r"^>\s*.*?(complete context|repository atlas)", re.MULTILINE | re.IGNORECASE)
 LINK_SKIP_PREFIXES = ("http://", "https://", "mailto:", "#")
 COVERAGE_KEYWORDS = ["complete", "partial", "blocked", "not-found-after-search", "not-applicable", "out-of-scope"]
+ID_RE = re.compile(r"\b([RCPTALF])-(\d{1,4})\b")
 
 EXPECTED_DEFAULTS = [
     "BUSINESS_OVERVIEW.md",
@@ -367,6 +368,30 @@ def check_overview_context_bidi(files: dict, out_dir: Path, errors: list) -> Non
                 add(errors, "structural", f"domains/{d_name}: missing back-reference to {ov}")
 
 
+def extract_ids(text: str) -> set:
+    if not text:
+        return set()
+    return {f"{kind}-{num}" for kind, num in ID_RE.findall(text)}
+
+
+def check_id_cross_reference(files: dict, errors: list) -> None:
+    technical_text = files.get("TECHNICAL_DOMAIN_GUIDE.md") or ""
+    defined = extract_ids(technical_text)
+    if not defined:
+        return
+    consumers = {"BUSINESS_OVERVIEW.md": files.get("BUSINESS_OVERVIEW.md") or ""}
+    for d_name, d_text in files["__domains__"].items():
+        consumers[f"domains/{d_name}"] = d_text
+    for consumer_name, consumer_text in consumers.items():
+        if not consumer_text:
+            continue
+        referenced = extract_ids(consumer_text)
+        undefined = referenced - defined
+        if undefined:
+            sample = sorted(undefined)[:5]
+            add(errors, "structural", f"{consumer_name}: IDs not defined in TECHNICAL_DOMAIN_GUIDE.md (sample: {sample})")
+
+
 def collect_search_corpus(files: dict) -> dict:
     business = (files.get("BUSINESS_OVERVIEW.md") or "").lower()
     technical = (files.get("TECHNICAL_DOMAIN_GUIDE.md") or "").lower()
@@ -450,12 +475,13 @@ def run_case(case_dir: Path, out_dir: Path) -> int:
 
     check_surprise_cap_and_parity(files, errors)
     check_overview_context_bidi(files, out_dir, errors)
+    check_id_cross_reference(files, errors)
 
     corpora = collect_search_corpus(files)
     per_kind, per_fact_status, critical_missed = check_oracle(oracle, corpora, errors)
     check_questions(questions, corpora, errors)
 
-    structural = [m for _, m in errors if "placeholder" in m.lower() or "missing" in m.lower() or "link" in m.lower() or "reference" in m.lower() or "matrix" in m.lower() or "items" in m.lower() or "align" in m.lower() or "back-reference" in m.lower() or "without backticks" in m.lower() or "commits" in m.lower() or "ranges" in m.lower() or "on the case" in m.lower()]
+    structural = [m for kind, m in errors if kind == "structural"]
     oracle_errs = [m for kind, m in errors if kind == "oracle"]
 
     print(f"--- {case_dir.name} ---")

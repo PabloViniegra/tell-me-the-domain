@@ -2,6 +2,8 @@
 
 Where business meaning hides in a codebase, and how to find it cheaply. Language-agnostic; the patterns below are starting points, not an exhaustive list.
 
+Everything in this file is a search heuristic: a signal promotes a hypothesis, never a fact. Record the behavior you find; label the interpretation as `hypothesis` or `synthesis` until evidence confirms it.
+
 ## Contents
 
 1. Data model
@@ -14,7 +16,14 @@ Where business meaning hides in a codebase, and how to find it cheaply. Language
 8. Human language: errors, copy, i18n
 9. Tests as specification
 10. History and social evidence
-11. Signals that the domain is *not* here
+11. Interface and user journeys
+12. Reference data, seeds and fixtures
+13. Database-side logic
+14. Outputs and communications
+15. Imports, pipelines and reconciliation
+16. Audit and compliance
+17. Configuration and feature flags
+18. Signals that the domain is *not* here
 
 ---
 
@@ -67,7 +76,7 @@ rg -n "calculate|compute|price|fee|rate|discount|tax|vat|commission|score|quota|
 rg -n "\b0\.[0-9]{2}\b|\b[0-9]{2,}\b" <core-domain-files>
 ```
 
-Every magic number is a business decision. Record its value, its location, and whether it is configurable — a hardcoded rate is an operational risk and belongs in the technical document's risk section.
+Every magic number is a *candidate* business decision — a signal to investigate, not a fact. Record its value, its location, and whether it is configurable; then classify it (domain rule, application constraint, technical detail, unknown) before promoting it to the rules table. A hardcoded rate that turns out to be a domain rule is an operational risk and belongs in the technical document's risk section.
 
 Rounding mode, precision, and whether money is stored as integer minor units are business rules with legal consequences in some industries. Note them.
 
@@ -85,7 +94,7 @@ The set of roles is the cast of characters. Tenant or organization scoping in qu
 rg -n "cron|schedule|@Scheduled|celery|sidekiq|rrule|business_day|holiday|timezone|SLA|expires?_at|due_date"
 ```
 
-Scheduled jobs are recurring business obligations: invoicing cycles, reminder windows, retention purges, reconciliation runs. Business-day and holiday calendars indicate a regulated or contractual domain. Retention deletions usually imply a legal requirement — flag them.
+Scheduled jobs are recurring business obligations: invoicing cycles, reminder windows, retention purges, reconciliation runs. Business-day and holiday calendars indicate a regulated or contractual domain. Retention deletions may signal a legal requirement — record the behavior as observed and the legal reading as a hypothesis, never merged into one claim.
 
 ## 7. Integrations and external contracts
 
@@ -106,7 +115,7 @@ Someone already translated the rules into plain language for end users. This is 
 
 Domain test files under names like `*_test.*`, `*.spec.*`, `test_*.py`, `features/*.feature`.
 
-Read the *names* first — `it("rejects a refund after 30 days")` is a requirement. Fixtures and factories reveal what a realistic entity looks like, including which fields are truly mandatory in practice. BDD feature files, when present, are business documentation that happens to execute.
+Read the *names* first — `it("rejects a refund after 30 days")` is a requirement. BDD feature files, when present, are business documentation that happens to execute. Fixtures and factories reveal what a realistic entity looks like, including which fields are truly mandatory in practice — see § 12 before deciding whether to read them.
 
 ## 10. History and social evidence
 
@@ -115,7 +124,66 @@ Read the *names* first — `it("rejects a refund after 30 days")` is a requireme
 - ADRs (`docs/adr/`, `docs/decisions/`) are the only artifact designed to record *why*.
 - Long-lived TODO/FIXME comments near domain rules usually mark known business debt.
 
-## 11. Signals that the domain is *not* here
+## 11. Interface and user journeys
+
+Screens, forms, and navigation reveal operations that have no dedicated endpoint: bulk actions, wizards, draft states, UI-only validations, field visibility rules.
+
+Look for: route/page components, form schemas, menu definitions, permission-gated buttons, frontend validation schemas that duplicate backend rules.
+
+A rule enforced only in the UI is a finding: it describes intent, not protection. Record where each rule is enforced (edge / application / domain / db) — that axis is what the technical guide's invariant table uses.
+
+## 12. Reference data, seeds and fixtures
+
+Do not bulk-read these, but never skip them blindly either. When the coverage inventory marks them as contract, reference data, or the only statement of a rule, inspect them:
+
+- `seeds/`, `fixtures/`, `data/`, `*.csv`, tariff tables, country/currency lists, reason-code catalogues.
+- Golden files under `tests/fixtures/` often encode the expected output of a calculation more precisely than the code that produces it.
+- A fee schedule or eligibility matrix that only exists as a JSON fixture *is* the domain rule; its location does not make it less real.
+
+## 13. Database-side logic
+
+In legacy systems the domain often lives inside the database itself.
+
+```
+rg -n "CREATE (OR REPLACE )?(TRIGGER|FUNCTION|PROCEDURE)|CREATE VIEW" -i
+rg -n "ROW LEVEL SECURITY|POLICY ON|GENERATED ALWAYS" -i
+```
+
+Triggers, stored procedures, views, row-level security, and generated columns are business rules with the worst discoverability of any layer. If they exist, they are core — not an implementation detail.
+
+## 14. Outputs and communications
+
+The artifacts the business produces for the outside world: report generators, PDF/Excel exports, email and notification templates, invoice renderers, document templates.
+
+```
+rg -n "render|template|pdf|xlsx|csv|mail|notification" --files-with-matches
+```
+
+These answer "what does the actor actually receive" — often the only place the business outcome is stated in full sentences.
+
+## 15. Imports, pipelines and reconciliation
+
+Business data that enters outside the APIs: ETL jobs, bulk loaders, file imports (CSV/SFTP/EDI), synchronization with external systems, reconciliation reports.
+
+```
+rg -n "import|etl|sync|reconcil|bulk|load" -i --files-with-matches
+```
+
+Reconciliation code is especially valuable: it exists where two systems can disagree, which tells you exactly which facts the business does not fully control.
+
+## 16. Audit and compliance
+
+Audit-log writers, consent records, legal holds, retention policies, access logs, soft-delete with history. In regulated domains these are not cross-cutting infrastructure — they are the product. Record what is captured, when, and what query surface exposes it.
+
+## 17. Configuration and feature flags
+
+```
+rg -n "feature.?flag|isEnabled|variant|rollout|plan|tier|region" -i
+```
+
+Flags, plans, regions, and tenant overrides are behavioral branches the runtime takes. Code guarded by a disabled flag is present but not active — record it with `runtime_status: config-dependent` or `inactive`, never as observed current behavior. The same binary can run several different businesses.
+
+## 18. Signals that the domain is *not* here
 
 Do not spend tokens on: dependency lockfiles, generated clients and stubs, migrations that only add indexes, CI configuration, linter and formatter config, boilerplate CRUD controllers that just forward to a service, DTO mappers, snapshot files, vendored code.
 

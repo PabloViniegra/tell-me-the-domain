@@ -1,11 +1,20 @@
 # [Context name] — Bounded context
 
-> Reconstructed from the codebase at [commit / date]. Scope: the **[context]** bounded context within the wider product. Complements `../BUSINESS_OVERVIEW.md` and `../TECHNICAL_DOMAIN_GUIDE.md` — does not replace them. This document describes only behavior observed in the repository. Inconsistencies are recorded as observations, not questions for the reader.
+> Reconstructed from the codebase at [commit / date]. Analysis mode: [complete context / repository atlas]. Scope: the **[context]** bounded context within the wider product. Complements `../BUSINESS_OVERVIEW.md` and `../TECHNICAL_DOMAIN_GUIDE.md` — does not replace them.
+> Register: business language. Rules, concepts, and terms are referenced by ID (`R-001`, `C-001`); the `path:line` evidence for each ID lives in `../TECHNICAL_DOMAIN_GUIDE.md`.
 > **Discovery boundary:** [Modules and deployables owned by this context.] **Sampled or excluded:** [Areas of this context intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, or facts that could not be established from this context.]
 
 ## Why this context exists
 
-[The business problem this bounded context solves, in business language. State what the wider product would lose if this context disappeared.]
+[The business problem this bounded context solves, in business language — only if the repository establishes it. Otherwise record the observable fact (what it does) and list the purpose under § What this context does not establish.]
+
+## Concept index (this context)
+
+[Every concept this context owns, complete. One line each; depth lives below.]
+
+| ID | Concept | One-line meaning |
+|---|---|---|
+| C-101 | [Concept] | [One-line meaning] |
 
 ## The main concepts
 
@@ -25,6 +34,14 @@ A glossary of one-liners belongs at the end of the document; this section is whe
 
 **Why a newcomer must understand it.** [...]
 
+## Process catalog (this context)
+
+[Every material process this context participates in. Cross-context processes name the other contexts involved.]
+
+| ID | Process | Actor | Trigger | Outcome | Contexts crossed |
+|---|---|---|---|---|---|
+| P-101 | [Name] | [Who starts it] | [What starts it] | [What the business gets] | [other contexts, or "none"] |
+
 ## How the value flows in this context
 
 ```mermaid
@@ -32,9 +49,13 @@ graph LR
     Trigger --> Step --> Outcome
 ```
 
-[Narrate in business terms: who triggers the flow, what has to be true along the way, what the business gets.]
+[Narrate in business terms: who triggers the flow, what has to be true along the way, what the business gets. Include the failure and exception paths that change the outcome.]
 
-## Life of a [main entity in this context]
+## Lifecycles
+
+[One subsection per entity in this context that has a meaningful state. For each: states, transitions, who moves them, which transitions the system explicitly rejects, and which have no code behind them (absence, not prohibition).]
+
+### Life of a [entity]
 
 ```mermaid
 stateDiagram-v2
@@ -42,37 +63,29 @@ stateDiagram-v2
     First --> Last
 ```
 
-[States, transitions, who moves them, which moves are deliberately impossible.]
-
 ## Invariants specific to this context
 
-| Rule | Evidence | Confidence | Failure mode |
-|---|---|---|---|
+| ID | Rule | Failure mode |
+|---|---|---|
+| R-101 | [What must hold] | [What happens when violated] |
 
-[State only rules that are specific to this context. Rules shared across contexts belong in `../BUSINESS_OVERVIEW.md` § The rules of the game and `../TECHNICAL_DOMAIN_GUIDE.md` § Invariants and business rules; reference them from here rather than duplicate.]
+[State only rules that are specific to this context. Rules shared across contexts belong in `../BUSINESS_OVERVIEW.md` § The rules of the game; reference them from here by ID rather than duplicating. The evidence for each ID lives in `../TECHNICAL_DOMAIN_GUIDE.md` § Invariants and business rules.]
 
 ## Vocabulary (this context)
 
-| Term | Means | Also called |
-|---|---|---|
-
-[Context-scoped terms only. The product-wide glossary is in `../BUSINESS_OVERVIEW.md` § Vocabulary.]
-
-## Code ↔ business glossary (this context)
-
-| Code term | Business term | Defined at | Note |
+| ID | Term | Means | Also called |
 |---|---|---|---|
-| `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming specific to this context] |
+| T-101 | [Term] | [One-line definition] | [Alias in the interface or in the code] |
 
-[Context-scoped code identifiers only. The product-wide glossary is in `../TECHNICAL_DOMAIN_GUIDE.md` § Glossary (code ↔ business).]
+[Context-scoped terms only. The product-wide glossary is in `../BUSINESS_OVERVIEW.md` § Vocabulary; the code-level mapping with evidence is in `../TECHNICAL_DOMAIN_GUIDE.md` § Glossary (code ↔ business).]
 
 ## Risks specific to this context
 
-A new joiner working in this context should know before their first change. Each row states what could go wrong, why, and the closest context-level evidence.
+Things a new joiner working in this context should know before their first change. Reference the evidence by ID; the `path:line` lives in `../TECHNICAL_DOMAIN_GUIDE.md` § Risks and observations.
 
-- **BLOCKER — [Observation]** — `path:line`. [Why it is a blocker: rule enforced in two layers that can diverge, etc.]
-- **RISK — [Observation]** — `path:line`. [Why it is a risk: hardcoded threshold, magic number, business logic in a migration, etc.]
-- **SMELL — [Observation]** — `path:line`. [Why it is a smell: dead branch, naming confusion, etc.]
+- **BLOCKER — [Observation]** — [ID]. [Why it is a blocker.]
+- **RISK — [Observation]** — [ID]. [Why it is a risk.]
+- **SMELL — [Observation]** — [ID]. [Why it is a smell.]
 
 [Context-scoped risks only. Product-wide risks live in `../TECHNICAL_DOMAIN_GUIDE.md` § Risks and observations.]
 
@@ -82,9 +95,9 @@ A new joiner working in this context should know before their first change. Each
 |---|---|---|
 | [Name] | [`<other>.md`](<other>.md) | [Reads from / writes to / triggered by / …] |
 | Product overview | [`../BUSINESS_OVERVIEW.md`](../BUSINESS_OVERVIEW.md) | This context is one part of what the business overview describes. Cross-reference it for any rule or concept that crosses boundaries, and for the "Three things that would surprise a newcomer". |
-| Code map | [`../TECHNICAL_DOMAIN_GUIDE.md`](../TECHNICAL_DOMAIN_GUIDE.md) | The `path:line` evidence for every claim about code in this document lives there. |
+| Code map | [`../TECHNICAL_DOMAIN_GUIDE.md`](../TECHNICAL_DOMAIN_GUIDE.md) | The evidence for every rule, concept, and term ID used in this document lives there. |
 
-If the product has only one context, replace this section with: *"This product is a single bounded context; no per-context files are produced."* When per-context files exist, every entry above links back to this section from its own "Related contexts", so navigation works in both directions.
+When per-context files exist, every entry above links back to this section from its own "Related contexts", so navigation works in both directions.
 
 ## What this context does not establish
 

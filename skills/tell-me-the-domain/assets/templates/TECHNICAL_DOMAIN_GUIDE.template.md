@@ -1,41 +1,44 @@
 # [Product name] — Technical domain guide
 
-> Reconstructed from the codebase at [commit / date]. This guide describes observed behavior only.
+> Reconstructed from the codebase at [commit / date]. Analysis mode: [complete context / repository atlas]. This guide describes observed behavior only.
 > References point to `path/to/file.ext:line` as of that revision. Do not infer expected behavior or propose corrections. Record inconsistencies, contradictions, and ambiguities as observations with their evidence.
+> Every rule, concept, process, and term carries a stable ID (`R-001`, `C-001`, `P-001`, `T-001`); `BUSINESS_OVERVIEW.md` and the per-context files reference those IDs, and this guide is where their evidence lives.
 
 ## Orientation
 
 [Two or three sentences: what the system does, what shape it is (single service, monorepo, modular monolith), and where the business logic actually lives versus where it merely passes through.]
 
-*Example:* *Acme Claims is a modular monolith with three deployables (portal, API, worker). The pricing logic lives entirely in `src/pricing/`; the rest is request routing, persistence, and presentation. Anything you change in `src/pricing/` needs a corresponding update to the per-insurer golden fixtures under `tests/fixtures/insurers/`.*
+*Example:* *Acme Claims is a modular monolith with three deployables (portal, API, worker). The pricing logic lives entirely in `src/pricing/`; the rest is request routing, persistence, and presentation.*
 
 **Discovery boundary:** [Contexts and deployables analyzed.] **Sampled or excluded:** [Areas intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, conflicting evidence, or recommended next context.]
 
+## Coverage matrix
+
+[The denominator of completeness — one row per surface per context, from the ledger's coverage inventory. Statuses: `complete` / `partial` / `blocked` / `not-found-after-search` / `not-applicable` / `out-of-scope`. In complete context mode every row must be `complete`, `not-found-after-search`, or `not-applicable`. In atlas mode, every `partial`, `blocked`, or `out-of-scope` row must say what remains and how a second pass continues.]
+
+| Context | Surface | Artifacts found | Reviewed | Excluded | Status | Note |
+|---|---|---|---|---|---|---|
+| [Name] | [routes / jobs / tables / …] | [n] | [n] | [n] | [status] | [what remains, if anything] |
+
 ## Three things that would surprise a newcomer
 
-[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and the evidence. Hard cap at three; longer lists become decoration. Same findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer` in business language.]
+[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Hard cap at three. Same findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer` in business language.]
 
 *Example:*
 1. *The "Paid" transition is guarded twice with different rules.* *`src/claims/service.py:142` allows `Submitted → Rejected`; `migrations/0042.sql:18` does not. Either side can be patched without the other noticing.* — `src/claims/service.py:142`, `migrations/0042.sql:18`
 2. *Pricing logic is duplicated in two places that diverge on rounding.* *`src/pricing/engine.py` uses banker's rounding; `src/payments/calculator.py` rounds half-up. There is no shared helper.* — `src/pricing/engine.py:201`, `src/payments/calculator.py:88`
-3. *The legacy `legacy_submit()` function is referenced by nothing but still imported.* *Imports come from a script that was removed in commit `a1b2c3d`. The function is dead but the import chain keeps the module alive.* — `src/claims/actions.py:204`, `git log --follow src/claims/actions.py`
+3. *The legacy `legacy_submit()` function has no callers.* *It is imported by a module whose own callers were removed; runtime status: unreachable.* — `src/claims/actions.py:204`
 
 ## Read these first
 
 **Read these first:** `path/a.ext`, `path/b.ext`, `path/c.ext` — the three files that explain the most about the domain.
 
-**Start here for the actual task** — action entries that point a contributor at the right place for what they came to do, not what they came to learn:
+**Start here for the actual task** — domain-focused action entries. Point a contributor at the right place for what they came to change:
 
-- *Fixing a bug in `<area>`:* start at `<path:line>`; tests in `<path>`; owner `<team or person>`. Do not change `<path:line>` without reading `<policy path>` (rule R-NNN).
-- *Deploying:* `<command>`; production requires `<team>` approval; recent incident evidence at `<path:line>`.
-- *On-call:* logs at `<location>`; runbook at `<path>`; page `<team>` for SEV-1.
-- *Onboarding for the long haul:* read Orientation, then Domain map, then the Invariants section for the module you will own.
+- *Changing a rule in `<area>`:* start at `<path:line>`; tests in `<path>`. Do not change `<path:line>` without reading the other enforcement layers listed under rule R-NNN.
+- *Onboarding for the long haul:* read Orientation, then the coverage matrix, then the Domain map, then the Invariants section for the module you will own.
 
-*Example:*
-
-- *Fixing a pricing bug:* `src/pricing/rounding.py:14`; tests in `tests/pricing/golden/`; owner `@pricing-team`. Do not change the rounding policy without `docs/policies/rounding.md` (rule R-007).
-- *Deploying:* `bin/deploy.sh --env=staging`; production requires `@ops` approval. The last deploy failure was caused by missing permissions on `s3://acme-fee-schedules/` — `terraform/main.tf:88`.
-- *On-call:* Datadog dashboard `acme-claims-prod`; runbook `docs/runbooks/`. SEV-1: page `@claims-oncall`; infrastructure: `@platform-oncall`.
+[Operational entries — deploying, on-call, owners — are optional: include them only when the repository actually documents them (runbooks, CI files, CODEOWNERS). Never invent teams, dashboards, or incident history.]
 
 ## Domain map
 
@@ -43,9 +46,7 @@
 |---|---|---|---|
 | [Name] | `src/...` | [Concepts it is authoritative for] | [Other contexts] |
 
-*Example:*
-| *Pricing* | *`src/pricing/`* | *Fee schedules, rounding, currency conversion* | *Insurer registry (read-only)* |
-| *Claims lifecycle* | *`src/claims/`* | *Status transitions, reviewer assignment, deadlines* | *Pricing (read-only), Audit (writes)* |
+[A grouping earns "bounded context" status when it has its own vocabulary, its own authority over its data, and translation at its edges — not merely because it is a folder or a deployable. Where the boundary is only technical, say so.]
 
 ```mermaid
 graph TD
@@ -62,15 +63,18 @@ erDiagram
     ENTITY_A ||--o{ ENTITY_B : "relationship"
 ```
 
-| Entity | Defined at | Identity | Notes |
-|---|---|---|---|
-| [Name] | `path:line` | [Natural or surrogate key] | [Aggregate root, value object, lifecycle owner] |
+| ID | Entity | Defined at | Identity | Notes |
+|---|---|---|---|---|
+| C-001 | [Name] | `path:line` | [Natural or surrogate key] | [Aggregate root, value object, lifecycle owner] |
 
 *Example:*
-| *Claim* | *`src/claims/models.py:21`* | *Surrogate (`claim_id`); natural key is `(hospital_id, insurer_ref)`* | *Aggregate root; owns its Review and Payment rows.* |
-| *Reviewer* | *`src/accounts/models.py:55`* | *Surrogate (`user_id`)* | *Not an aggregate root; assigned to Claims via a join table.* |
+| C-001 | *Claim* | *`src/claims/models.py:21`* | *Surrogate (`claim_id`); natural key is `(hospital_id, insurer_ref)`* | *Aggregate root; owns its Review and Payment rows.* |
 
 ## Lifecycles
+
+[One subsection per entity that has a meaningful state. For each: the diagram, the transition table, and two explicit lists — transitions the system *rejects* (a guard or constraint fires) and transitions with *no code behind them* (absence, not prohibition).]
+
+### Life of a [entity]
 
 ```mermaid
 stateDiagram-v2
@@ -87,39 +91,51 @@ stateDiagram-v2
 | *Submitted → In Review* | *`src/claims/service.py:142`* | *`reviewer_id is not None`* | *Raises `NoReviewerAssigned`; the API returns 409.* |
 | *In Review → Paid* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *Both the service-level guard and the DB CHECK* | *Service raises `PaymentBeforeReview` (422); DB rejects the UPDATE if the guard is bypassed.* |
 
-Transitions that are deliberately absent: [list them — knowing what is impossible is as useful as knowing what is possible].
+Transitions explicitly rejected: [guards/constraints that fire].
+Transitions with no observed code: [absences — no enforcement found either way].
+
+## Process inventory
+
+[Every operation from the coverage inventory, traced end to end. State: `traced` / `passthrough` / `out-of-scope` / `blocked`. Passthrough means confirmed to carry no decision logic — say what you checked.]
+
+| ID | Operation | Entry point | Use case | Side effects | State | Evidence |
+|---|---|---|---|---|---|---|
+| P-001 | [Name] | [route / job / consumer / handler] | `path:line` | [persistence, events, integrations] | [state] | `path:line` |
 
 ## Invariants and business rules
 
-Grouped by concept. Each rule states what it enforces, where it is enforced, and what happens when it is violated. Note where the same rule is enforced in more than one layer, and where it is enforced in none.
+Grouped by concept. Each rule gets a stable ID, its evidence, and four separate axes — never collapse them into one confidence label:
+
+- **Evidence confidence** — `direct`: the code or docs state it. `corroborated`: two independent artifacts agree. `indirect`: inferred from naming or shape. Surface `indirect` rules explicitly so reviewers do not over-trust them.
+- **Enforcement** — where the rule is enforced: `db`, `domain`, `application`, `edge`, `docs-only`, `none`. A rule enforced at one layer is not less certain; it is less defended.
+- **Consistency** — `consistent` / `divergent` / `unknown` across layers.
+- **Runtime status** — `active` / `config-dependent` / `inactive` / `test-only` / `unreachable` / `unknown`.
 
 ### [Concept]
 
-| Rule | Evidence | Confidence | Failure mode | Rationale |
-|---|---|---|---|---|
-| [What must hold] | `path:line` | [high / medium / low] | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
-
-*Confidence —* *high:* enforced by typed error + DB constraint + a test covering the violation. *medium:* enforced at one layer only (e.g., only at the API or only at the DB). *low:* observed convention in one place, no test, no second enforcement layer. Surface `low` rules explicitly so reviewers do not over-trust them.
+| ID | Rule | Evidence | Confidence | Enforcement | Consistency | Runtime | Failure mode | Rationale |
+|---|---|---|---|---|---|---|---|---|
+| R-001 | [What must hold] | `path:line` | [direct / corroborated / indirect] | [db / domain / …] | [consistent / divergent / unknown] | [active / …] | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
 
 *Example:*
-| *A claim cannot move to Paid without a reviewer_id* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *high* | *Service raises `PaymentBeforeReview`; DB CHECK rejects the row UPDATE.* | *Stated in `docs/policies/audit.md:4`.* |
-| *A reviewer cannot approve claims from their own hospital* | *`src/accounts/policy.py:71`* | *medium* | *API returns 403; nothing in the DB layer re-checks this.* | *Not stated in the repository; inferred from the insurer contract in `docs/contracts/insurer-acme.md`.* |
+| R-007 | *A claim cannot move to Paid without a reviewer_id* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *direct* | *domain + db* | *divergent (the two layers reject different transitions)* | *active* | *Service raises `PaymentBeforeReview`; DB CHECK rejects the row UPDATE.* | *Stated in `docs/policies/audit.md:4`.* |
+| R-009 | *A reviewer cannot approve claims from their own hospital* | *`src/accounts/policy.py:71`* | *direct* | *application* | *unknown (nothing in the DB layer re-checks this)* | *active* | *API returns 403.* | *Not stated in the repository.* |
 
 ## Policies, constants and calculations
 
-| What | Value | Location | Configurable |
-|---|---|---|---|
-| [Threshold, rate, window] | [Value] | `path:line` | [Yes / hardcoded] |
+| ID | What | Value | Location | Configurable | Kind |
+|---|---|---|---|---|---|
+| R-020 | [Threshold, rate, window] | [Value] | `path:line` | [Yes / hardcoded] | [domain rule / application constraint / technical / unknown] |
 
-[Calculation logic worth understanding before touching it: rounding, precision, ordering of operations, currency handling. Describe what is implemented, including divergent implementations, without selecting an intended one.]
+[Calculation logic worth understanding before touching it: rounding, precision, ordering of operations, currency handling. Describe what is implemented, including divergent implementations, without selecting an intended one. Not every number is a business rule — use the Kind column and say `unknown` when the repository does not say.]
 
 ## Permissions and visibility
 
-| Actor | Can | Enforced at |
-|---|---|---|
-| [Role] | [Operations] | `path:line` |
+| ID | Actor | Can | Enforced at |
+|---|---|---|---|
+| A-001 | [Role] | [Operations] | `path:line` |
 
-[Tenant or organization scoping: how it is applied, and where it could be forgotten.]
+[Tenant or organization scoping: how it is applied, and where it could be forgotten. Include automated actors — jobs and consumers — with the operations they perform.]
 
 ## Time-driven behaviour
 
@@ -133,11 +149,11 @@ Grouped by concept. Each rule states what it enforces, where it is enforced, and
 |---|---|---|---|
 | [Name] | inbound / outbound | [Business role] | `path:line` |
 
-[What breaks in business terms when each one is unavailable.]
+[For each: what breaks in business terms when it is unavailable, and what the repository does not show — authentication, versioning, payload mapping, rate limits. Webhook handlers list the events the outside world can impose on this business.]
 
 ## Where the value lives, technically
 
-[The modules that carry the differentiating logic, and why. This is where reviews should be strictest and test coverage highest.]
+[The modules that concentrate the differentiating logic, with evidence — this is where reviews should be strictest and test coverage highest. Label the claim: observed mechanism (code shows concentration) vs synthesis (your reading of why it matters). Commercial value the repository cannot prove belongs in § Information absent from the repository.]
 
 ## Risks and observations
 
@@ -150,29 +166,25 @@ Things a newcomer should know before their first change. Facts and their direct 
 *Example:*
 
 - **BLOCKER — Claim status transitions are guarded in two places** — `src/claims/service.py:142` and `migrations/0042.sql:18`. The Python guard allows `Submitted → Rejected`; the DB constraint does not. Either side can be patched without the other noticing.
-- **RISK — Insurer fee schedules are committed as JSON in the repo** — `config/fees/insurer-acme.json:1`. A change requires a full deploy; there is no admin UI or feature flag. Hot-fixing a pricing bug takes a release cycle.
-- **SMELL — `legacy_submit()` in `src/claims/actions.py:204` is unreachable** — no caller exists in the current codebase. Either dead code or referenced from a script that was removed.
+- **RISK — Insurer fee schedules are committed as JSON in the repo** — `config/fees/insurer-acme.json:1`. A change requires a full deploy; there is no admin UI or feature flag.
+- **SMELL — `legacy_submit()` in `src/claims/actions.py:204` has no callers** — unreachable in the current codebase.
 
 ### Terminology traps
 
 Naming mismatches between the code and the business. Each row names the trap, the two meanings, and where it shows up. List only traps that have caused or could cause a wrong business decision — not minor synonyms. Cross-reference `BUSINESS_OVERVIEW.md § Terminology traps` for the same entries in business language.
 
-| Code / UI term | Business meaning | Why it confuses | Defined at |
-|---|---|---|---|
-| [Term as it appears] | [What the business actually means] | [The wrong assumption] | `path:line` |
-
-*Example:*
-| *`submit_claim()`* | *Send to internal review* | *The function name suggests sending to the insurer; it only enqueues for Acme's internal review. See also BUSINESS_OVERVIEW.md § Terminology traps.* | `src/claims/actions.py:88` |
+| ID | Code / UI term | Business meaning | Why it confuses | Defined at |
+|---|---|---|---|---|
+| T-001 | [Term as it appears] | [What the business actually means] | [The wrong assumption] | `path:line` |
 
 ## Glossary (code ↔ business)
 
-| Code term | Business term | Defined at | Note |
-|---|---|---|---|
-| `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming] |
+| ID | Code term | Business term | Defined at | Note |
+|---|---|---|---|---|
+| T-001 | `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming] |
 
 *Example:*
-| *`ClaimStatus.PAID`* | *Paid* | *`src/claims/enums.py:7`* | *Same status name as the legacy Perl codebase, kept for audit-log continuity.* |
-| *`payout_amount_cents`* | *Net payout* | *`src/payments/models.py:33`* | *Field stored in cents; UI shows dollars. Watch for off-by-100 bugs when reading the value back.* |
+| T-007 | *`payout_amount_cents`* | *Net payout* | *`src/payments/models.py:33`* | *Field stored in cents; UI shows dollars. Watch for off-by-100 bugs when reading the value back.* |
 
 ## Related contexts
 

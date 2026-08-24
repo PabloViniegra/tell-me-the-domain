@@ -7,7 +7,8 @@
       "importance": "critical",
       "statement": "Three layers disagree on the refund window: the service code says 30 days, the database CHECK says 14 days, and the tests assert the 30-day behavior.",
       "required_terms": ["30", "14"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/refunds/service.py", "lines": [3, 12]}, {"path": "migrations/001_refunds.sql", "lines": [7]}, {"path": "tests/test_refunds.py", "lines": [6, 11, 14]}]
     },
     {
       "id": "R-202",

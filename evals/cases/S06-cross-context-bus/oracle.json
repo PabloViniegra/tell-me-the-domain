@@ -7,7 +7,8 @@
       "importance": "critical",
       "statement": "There is a billing context and a notifications context in this repository.",
       "required_terms": ["billing", "notifications"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "src/billing/service.py", "lines": [6]}, {"path": "src/notifications/handler.py", "lines": [6]}]
     },
     {
       "id": "E-501",
@@ -15,7 +16,8 @@
       "importance": "critical",
       "statement": "Billing publishes InvoicePaid; notifications consumes it.",
       "required_terms": ["InvoicePaid"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "src/billing/service.py", "lines": [9, 10]}, {"path": "src/notifications/handler.py", "lines": [8]}]
     },
     {
       "id": "R-501",
@@ -23,7 +25,8 @@
       "importance": "critical",
       "statement": "The shared payload must contain invoice_id, tenant_id, amount_cents, paid_at.",
       "required_terms": ["invoice_id", "tenant_id", "amount_cents", "paid_at"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/billing/service.py", "lines": [11, 12, 13, 14, 15]}, {"path": "src/notifications/handler.py", "lines": [3, 11]}]
     },
     {
       "id": "T-501",

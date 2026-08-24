@@ -35,7 +35,7 @@ Build a map before opening any implementation file. All of this is high signal p
 
 Record in the ledger: candidate bounded contexts, the entity vocabulary, and the first draft of the coverage inventory. Rank the candidates; you will not read all of them in full.
 
-**Empty or greenfield repos.** If reconnaissance surfaces no domain artifacts — no data models, no business-facing routes, no migrations, no test names that read as requirements — the repository does not establish a domain yet. Surface that finding to the user and stop. Do not invent a domain to fill the documents; `references/evidence-map.md` § 11 ("Signals that the domain is not here") lists what counts as an absence signal.
+**Empty or greenfield repos.** If reconnaissance surfaces no domain artifacts — no data models, no business-facing routes, no migrations, no test names that read as requirements — the repository does not establish a domain yet. Write the two overview documents as an absence report: state that the domain is not established, record the searched surfaces as `not-found-after-search`, and do not invent product behavior or source references. Surface the same finding in chat. `references/evidence-map.md` § 18 ("Signals that the domain is not here") lists what counts as an absence signal.
 
 ## Phase 1b — Coverage inventory (mandatory)
 

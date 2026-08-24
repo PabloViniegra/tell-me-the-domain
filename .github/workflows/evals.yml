@@ -1,0 +1,70 @@
+name: Domain skill evaluations
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runner-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Run runner tests
+        run: python3 -m unittest discover -s evals/runner -p 'test_*.py'
+
+  black-box:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      TMTD_AGENT_CMD: ${{ vars.TMTD_AGENT_CMD }}
+      TMTD_JUDGE_CMD: ${{ vars.TMTD_JUDGE_CMD }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+          path: evaluator
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Run all black-box cases
+        working-directory: candidate
+        run: |
+          if [ -f ../evaluator/evals/runner/run_all.py ]; then
+            runner=../evaluator/evals/runner/run_all.py
+            cases=../evaluator/evals/cases
+          else
+            runner=evals/runner/run_all.py
+            cases=evals/cases
+          fi
+          python3 "$runner" \
+            --cases-root "$cases" \
+            --output-root "$RUNNER_TEMP/tmtd-evals" \
+            --agent-cmd "$TMTD_AGENT_CMD" \
+            --judge-cmd "$TMTD_JUDGE_CMD" \
+            --repeats 2 \
+            --agent-timeout 300 \
+            --judge-timeout 120 \
+            --case-timeout 450
+      - name: Upload evaluation outputs
+        if: ${{ success() && github.event_name == 'workflow_dispatch' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tmtd-evaluation-outputs
+          path: |
+            ${{ runner.temp }}/tmtd-evals/**/BUSINESS_OVERVIEW.md
+            ${{ runner.temp }}/tmtd-evals/**/TECHNICAL_DOMAIN_GUIDE.md
+          if-no-files-found: ignore

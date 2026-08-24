@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Is the automatic renewal discount active by default?",
+    "must_contain": ["disabled", "full"]
+  },
+  {
+    "question": "Which repository fact is missing about the feature flag?",
+    "must_contain": ["not established"]
+  }
+]

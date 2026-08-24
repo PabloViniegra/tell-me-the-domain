@@ -7,7 +7,8 @@
       "importance": "critical",
       "statement": "Order state lives in the event log, not in a status column.",
       "required_terms": ["event", "order"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "README.md", "lines": [3]}, {"path": "migrations/001_init.sql", "lines": [8, 11]}]
     },
     {
       "id": "E-301",
@@ -15,7 +16,8 @@
       "importance": "critical",
       "statement": "Past-tense events are OrderPlaced, OrderShipped, OrderCancelled.",
       "required_terms": ["OrderPlaced", "OrderShipped", "OrderCancelled"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "src/orders/service.py", "lines": [17, 23, 29]}]
     },
     {
       "id": "R-301",
@@ -24,7 +26,7 @@
       "statement": "An order must have at least one item to be placed.",
       "required_terms": ["items", "order"],
       "expected_in": "both",
-      "evidence": [{"path": "src/orders/service.py", "lines": [16]}]
+      "evidence": [{"path": "src/orders/service.py", "lines": [13, 14, 16, 17]}]
     },
     {
       "id": "R-302",
@@ -32,7 +34,8 @@
       "importance": "critical",
       "statement": "Domain events are published to an AWS EventBridge bus named 'orders-events'.",
       "required_terms": ["EventBridge", "orders-events"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/orders/service.py", "lines": [5, 7, 33, 36]}]
     },
     {
       "id": "R-303",
@@ -40,7 +43,8 @@
       "importance": "important",
       "statement": "Shipping or canceling an order that was never placed raises a DomainError.",
       "required_terms": ["ship", "place"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/orders/service.py", "lines": [21, 22, 27, 28]}]
     },
     {
       "id": "F-301",

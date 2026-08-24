@@ -1,0 +1,10 @@
+[
+  {
+    "question": "What product does this repository implement?",
+    "must_contain": ["not established"]
+  },
+  {
+    "question": "What should a second discovery pass investigate?",
+    "must_contain": ["domain", "evidence"]
+  }
+]

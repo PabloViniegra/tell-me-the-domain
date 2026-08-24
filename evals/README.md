@@ -12,9 +12,13 @@ evals/
 │   └── <case-id>/
 │       ├── repo/               # The codebase the skill is run against
 │       ├── oracle.json         # Facts the documents must contain
-│       └── questions.json      # Newcomer questions answerable from the documents alone
+│       ├── questions.json      # Newcomer questions answerable from the documents alone
+│       └── prompt.txt          # Optional per-case agent prompt
 └── runner/
-    └── check_outputs.py        # Deterministic checks + oracle recall
+    ├── check_outputs.py        # Structural checks + oracle scoring
+    ├── run_case.py              # Materialize, invoke an agent, then check one case
+    ├── run_all.py               # Run every case and gate on the worst result
+    └── process_utils.py        # Timeout cleanup for agent and judge processes
 ```
 
 ## Running a case
@@ -27,7 +31,32 @@ evals/
 python3 evals/runner/check_outputs.py --case evals/cases/S01-single-context --outputs <dir-with-generated-docs>
 ```
 
-Exit code 0 means all deterministic checks passed and every critical oracle fact was recalled. The report prints per-fact recall and the failing checks.
+Without `--judge-cmd`, the standalone checker uses required-term recall as a local fallback. `run_all.py` requires the entailment judge so the CI gate never silently falls back to term recall:
+
+```
+python3 evals/runner/run_all.py \
+  --output-root /tmp/tmtd-evals \
+  --agent-cmd '<agent command>' \
+  --judge-cmd '<judge command>'
+```
+
+The agent command runs from the caller's working directory and receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`; it may also use `{repo}` and `{output}` as complete shell words. Prefer the environment variables when composing a quoted command. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
+
+```
+{"facts":[{"id":"R-001","entailed":true,"score":0.93,"reason":"The document states the rule and cites its source span."}]}
+```
+
+The default acceptance threshold is `0.80`; use `--judge-threshold` to change it. Critical facts must be entailed. `run_all.py` runs every case, continues after failures, enforces per-agent, judge, and case timeouts, and exits with the worst exit code rather than averaging runs.
+
+If a case contains `prompt.txt`, `run_case.py` uses it instead of the default wording. It substitutes `{case_id}`, `{repo}`, `{output}`, and `{focus}`; the generated prompt is saved in the run directory.
+
+The GitHub workflow always runs the runner contract tests. Its black-box job is a required fail-closed gate: configure the repository variables `TMTD_AGENT_CMD` and `TMTD_JUDGE_CMD` before opening a PR. It uploads generated overview documents only for manual runs, not pull requests.
+
+On pull requests, the black-box runner and its oracle cases come from the base revision while the candidate checkout is the agent's working directory. This keeps a change from rewriting the evaluator and its release gate; new cases begin gating after they land on the base branch.
+
+The workflow has a one-time bootstrap fallback for the PR that first introduces the evaluator; later PRs always use the base-revision runner.
+
+The configured agent and judge commands are trusted executables, not a sandbox boundary. Run them on an isolated evaluator job; the runner removes GitHub and runner metadata from their environment but cannot safely hide provider credentials that the configured commands require.
 
 ## What the checker validates
 
@@ -41,11 +70,12 @@ Deterministic:
 - Every document states a commit hash or date and an analysis mode.
 - The technical guide contains a coverage matrix with recognized statuses.
 
-Oracle-driven (term recall as a first approximation of entailment):
+Oracle-driven:
 
-- Every fact's `required_terms` must appear in the documents named by `expected_in`.
-- Critical facts: 100% recall required. Overall recall is reported per kind.
+- With a judge, every fact is scored for entailment against its source spans and the generated documents. Critical facts must meet the threshold.
+- Without a judge, every fact's `required_terms` must appear in the documents named by `expected_in`; this is a compatibility fallback, not the release gate.
 - `questions.json`: each question's `must_contain` terms must appear in the documents — a cheap proxy for the docs-only newcomer exam.
+- `forbidden_output_terms`, when present in an oracle, must not appear in any generated document.
 
 ## Case catalog
 
@@ -54,10 +84,16 @@ Oracle-driven (term recall as a first approximation of entailment):
 | S01-single-context | Baseline: one context, explicit lifecycle, double-enforced rule, money in cents |
 | S02-rule-in-fixture | A pricing rule that only exists in configuration and a golden fixture — conditional-exclusion handling |
 | S03-contradictory-layers | Service, database, and tests disagree on a rule — both variants must be recorded as a conflict |
+| S04-async-events-only | Lifecycle encoded only in past-tense events with no status column |
+| S05-multi-tenant-scoping | Tenant isolation implicit in the `WHERE` clause; an `unsafe` variant must be flagged |
+| S06-cross-context-bus | Two services share events without an explicit contract |
+| S07-disabled-feature-flag | Code exists behind a feature flag disabled in shipped configuration |
+| S08-empty-repo | No domain artifacts are present; the agent must stop without inventing a product |
+| S09-prompt-injection | Repository documentation contains instructions that must be treated as untrusted content |
 
 ## Roadmap
 
-- More synthetic cases: async lifecycle via events only, multi-tenant scoping, monorepo with hidden cross-context relation, dead code behind a disabled flag, empty repo, prompt injection inside docs.
+- More synthetic cases: monorepo with hidden cross-context relation, metamorphic repository noise, and real open-source repos pinned by commit.
 - Metamorphic pairs: rename folders, reorder files, inject scaffolding noise; the model must not change except for references.
 - Real open-source repos pinned by commit, with oracles built independently by two reviewers.
 - Repeated runs per case; gate on the worst run, never the mean.

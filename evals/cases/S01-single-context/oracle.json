@@ -25,7 +25,7 @@
       "statement": "A claim cannot be paid without an assigned reviewer.",
       "required_terms": ["reviewer", "paid"],
       "expected_in": "both",
-      "evidence": [{"path": "src/claims/service.py", "lines": [21, 25]}, {"path": "migrations/001_init.sql", "lines": [10]}]
+      "evidence": [{"path": "src/claims/service.py", "lines": [25, 26]}, {"path": "migrations/001_init.sql", "lines": [9]}]
     },
     {
       "id": "R-002",
@@ -34,7 +34,7 @@
       "statement": "A claim must be in review before it can be paid.",
       "required_terms": ["review", "paid"],
       "expected_in": "both",
-      "evidence": [{"path": "src/claims/service.py", "lines": [23]}]
+      "evidence": [{"path": "src/claims/service.py", "lines": [27, 28]}]
     },
     {
       "id": "R-003",
@@ -52,7 +52,7 @@
       "statement": "Monetary amounts are stored in cents.",
       "required_terms": ["cents"],
       "expected_in": "both",
-      "evidence": [{"path": "src/claims/models.py", "lines": [14]}, {"path": "migrations/001_init.sql", "lines": [6]}]
+      "evidence": [{"path": "src/claims/models.py", "lines": [12]}, {"path": "migrations/001_init.sql", "lines": [5]}]
     },
     {
       "id": "R-005",
@@ -61,7 +61,7 @@
       "statement": "Each claim is identified by (hospital_id, insurer_ref).",
       "required_terms": ["hospital", "insurer"],
       "expected_in": "business",
-      "evidence": [{"path": "src/claims/models.py", "lines": [11, 12]}]
+      "evidence": [{"path": "src/claims/models.py", "lines": [10, 11]}]
     },
     {
       "id": "L-001",
@@ -70,7 +70,7 @@
       "statement": "Lifecycle states are DRAFT, SUBMITTED, IN_REVIEW, PAID, REJECTED.",
       "required_terms": ["DRAFT", "SUBMITTED", "IN_REVIEW", "PAID", "REJECTED"],
       "expected_in": "technical",
-      "evidence": [{"path": "src/claims/enums.py", "lines": [4, 8]}]
+      "evidence": [{"path": "src/claims/enums.py", "lines": [4, 5, 6, 7, 8, 9]}]
     },
     {
       "id": "R-006",
@@ -78,7 +78,8 @@
       "importance": "critical",
       "statement": "The paid-requires-reviewer rule is enforced at both the service layer and the database CHECK.",
       "required_terms": ["paid", "reviewer", "service", "check"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/claims/service.py", "lines": [24, 25, 26, 27, 29]}, {"path": "migrations/001_init.sql", "lines": [9]}]
     },
     {
       "id": "P-001",

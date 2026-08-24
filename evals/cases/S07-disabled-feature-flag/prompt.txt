@@ -1,0 +1,5 @@
+Use the `tell-me-the-domain` skill to reconstruct the business domain of this repository.
+Write BUSINESS_OVERVIEW.md and TECHNICAL_DOMAIN_GUIDE.md into the output directory.
+Repository: {repo}
+Output directory: {output}
+Focus: distinguish the disabled automatic renewal discount branch from the active charge behavior. Record the missing owner and activation path if the repository does not establish them.

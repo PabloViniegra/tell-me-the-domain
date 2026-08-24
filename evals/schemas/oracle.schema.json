@@ -6,6 +6,10 @@
   "required": ["case_id", "facts"],
   "properties": {
     "case_id": { "type": "string" },
+    "forbidden_output_terms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
     "facts": {
       "type": "array",
       "items": {
@@ -37,7 +41,7 @@
           "statement": { "type": "string" },
           "required_terms": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "type": "string", "minLength": 1 },
             "minItems": 1
           },
           "expected_in": { "type": "string", "enum": ["business", "technical", "both"] },
@@ -47,13 +51,27 @@
               "type": "object",
               "required": ["path"],
               "properties": {
-                "path": { "type": "string" },
-                "lines": { "type": "array", "items": { "type": "integer" } }
+                "path": { "type": "string", "minLength": 1 },
+                "lines": { "type": "array", "items": { "type": "integer", "minimum": 1 } }
               }
             }
           },
           "notes": { "type": "string" }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "importance": { "const": "critical" },
+                "kind": { "not": { "const": "absent" } }
+              }
+            },
+            "then": {
+              "required": ["evidence"],
+              "properties": { "evidence": { "minItems": 1 } }
+            }
+          }
+        ]
       }
     }
   }

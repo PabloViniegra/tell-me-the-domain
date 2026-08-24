@@ -1,0 +1,29 @@
+{
+  "case_id": "S08-empty-repo",
+  "facts": [
+    {
+      "id": "F-701",
+      "kind": "absent",
+      "importance": "critical",
+      "statement": "The repository contains no domain artifacts, so its business domain is not established.",
+      "required_terms": ["no domain", "not established"],
+      "expected_in": "both"
+    },
+    {
+      "id": "F-702",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "No routes, schema, services, jobs, integrations, or tests are available as business evidence.",
+      "required_terms": ["no", "evidence"],
+      "expected_in": "technical"
+    },
+    {
+      "id": "R-701",
+      "kind": "rule",
+      "importance": "important",
+      "statement": "A domain document for this repository must not invent product behavior.",
+      "required_terms": ["not", "invent"],
+      "expected_in": "business"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "case_id": "S07-disabled-feature-flag",
+  "facts": [
+    {
+      "id": "C-601",
+      "kind": "concept",
+      "importance": "critical",
+      "statement": "Automatic renewal discount is a feature-controlled billing concept.",
+      "required_terms": ["automatic", "renewal", "discount"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/billing/service.py", "lines": [5, 6]}]
+    },
+    {
+      "id": "R-601",
+      "kind": "configuration",
+      "importance": "critical",
+      "statement": "The automatic_renewal_discount feature flag is false in the shipped configuration.",
+      "required_terms": ["automatic_renewal_discount", "false"],
+      "expected_in": "technical",
+      "evidence": [{"path": "config/features.json", "lines": [2]}]
+    },
+    {
+      "id": "R-602",
+      "kind": "rule",
+      "importance": "critical",
+      "statement": "The active charge path returns the full amount while the discount flag is disabled.",
+      "required_terms": ["active", "full", "disabled"],
+      "expected_in": "both",
+      "evidence": [{"path": "src/billing/service.py", "lines": [5, 6, 8]}]
+    },
+    {
+      "id": "R-603",
+      "kind": "calculation",
+      "importance": "important",
+      "statement": "The inactive discount branch calculates a ten percent reduction.",
+      "required_terms": ["10", "discount"],
+      "expected_in": "technical",
+      "evidence": [{"path": "src/billing/discounts.py", "lines": [1, 2]}]
+    },
+    {
+      "id": "F-601",
+      "kind": "absent",
+      "importance": "important",
+      "statement": "The repository does not establish who owns the flag or how it is enabled in production.",
+      "required_terms": ["not established"],
+      "expected_in": "business"
+    }
+  ]
+}

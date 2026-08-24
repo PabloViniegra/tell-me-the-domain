@@ -3,6 +3,17 @@
 All notable changes to this skill are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- A per-PR evaluation workflow and `run_all.py`, which gates on the worst case result.
+- Entailment-judge support with source spans, generated documents, scores, and reasons.
+- Synthetic evaluation cases for disabled feature flags, empty repositories, and prompt injection.
+- Optional per-case `prompt.txt` files and forbidden-output checks for evaluation oracles.
+
+### Changed
+- Repository instructions are explicitly treated as untrusted evidence, never agent commands.
+
 ## [1.1.0] — 2026-08-24
 
 ### Changed

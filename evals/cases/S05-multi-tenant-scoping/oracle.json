@@ -7,7 +7,8 @@
       "importance": "critical",
       "statement": "Tickets are tenant-scoped; each tenant sees only its own rows.",
       "required_terms": ["tenant"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "README.md", "lines": [3]}, {"path": "src/tickets/service.py", "lines": [3, 5]}]
     },
     {
       "id": "T-401",
@@ -15,7 +16,8 @@
       "importance": "critical",
       "statement": "Tenant identity is on the ticket row as a tenant_id column.",
       "required_terms": ["tenant_id"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "src/tickets/models.py", "lines": [6, 8]}, {"path": "migrations/001_init.sql", "lines": [1, 3]}]
     },
     {
       "id": "R-401",
@@ -24,7 +26,7 @@
       "statement": "list_tickets filters by tenant_id in the WHERE clause.",
       "required_terms": ["list_tickets", "tenant_id"],
       "expected_in": "technical",
-      "evidence": [{"path": "src/tickets/service.py", "lines": [4]}]
+      "evidence": [{"path": "src/tickets/service.py", "lines": [4, 5]}]
     },
     {
       "id": "R-402",
@@ -33,7 +35,7 @@
       "statement": "list_tickets_unsafe returns rows across all tenants — must not be used.",
       "required_terms": ["list_tickets_unsafe", "tenant"],
       "expected_in": "technical",
-      "evidence": [{"path": "src/tickets/service.py", "lines": [11]}]
+      "evidence": [{"path": "src/tickets/service.py", "lines": [10, 12]}]
     },
     {
       "id": "P-401",

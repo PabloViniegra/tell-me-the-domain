@@ -7,7 +7,8 @@
       "importance": "critical",
       "statement": "Pricing uses a per-insurer fee rate that lives in configuration, not in code.",
       "required_terms": ["insurer", "fee"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "src/pricing/engine.py", "lines": [7, 8, 9, 13, 14]}, {"path": "config/fees/insurer-acme.json", "lines": [2]}]
     },
     {
       "id": "R-102",
@@ -15,7 +16,8 @@
       "importance": "critical",
       "statement": "The Acme insurer fee is 2.5 percent of the claim amount.",
       "required_terms": ["2.5"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "config/fees/insurer-acme.json", "lines": [2]}, {"path": "tests/fixtures/golden/acme.json", "lines": [3, 4]}]
     },
     {
       "id": "R-103",
@@ -23,7 +25,8 @@
       "importance": "critical",
       "statement": "Pricing rounds using the half_up rule configured per insurer.",
       "required_terms": ["half_up"],
-      "expected_in": "technical"
+      "expected_in": "technical",
+      "evidence": [{"path": "config/fees/insurer-acme.json", "lines": [3]}, {"path": "src/pricing/engine.py", "lines": [14, 15]}]
     },
     {
       "id": "F-101",
@@ -39,7 +42,8 @@
       "importance": "important",
       "statement": "Per-insurer configuration files are authoritative for rate and rounding rule.",
       "required_terms": ["insurer", "configuration"],
-      "expected_in": "both"
+      "expected_in": "both",
+      "evidence": [{"path": "src/pricing/engine.py", "lines": [7, 8, 9, 13]}, {"path": "config/fees/insurer-acme.json", "lines": [2, 3]}]
     }
   ]
 }

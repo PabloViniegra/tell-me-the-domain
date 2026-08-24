@@ -109,7 +109,7 @@ rg -n "" locales/ i18n/ translations/ --files
 rg -n "message|error_message|description" <catalog files>
 ```
 
-Someone already translated the rules into plain language for end users. This is the cheapest bridge between code and `USER_BUSINESS.md`, and often the only place the *why* is stated.
+Someone already translated the rules into plain language for end users. This is the cheapest bridge between code and `BUSINESS_OVERVIEW.md`, and often the only place the *why* is stated.
 
 ## 9. Tests as specification
 

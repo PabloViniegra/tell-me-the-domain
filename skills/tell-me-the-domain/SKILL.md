@@ -1,6 +1,6 @@
 ---
 name: tell-me-the-domain
-description: "Reconstruct a codebase's business domain into newcomer-facing docs. Use for onboarding, inherited or legacy code, clarifying business rules, or 'document the domain' requests."
+description: "Reconstruct a codebase's business domain. Use when onboarding, inheriting unfamiliar code, or asked to document the domain."
 license: MIT
 metadata:
   author: "PabloViniegra"
@@ -11,18 +11,19 @@ metadata:
 
 A skill for newcomers who join a project without knowing the business behind it. Read the codebase as the written record of the business. Treat every extraction as an observation grounded in the repository; do not infer intent or propose corrections.
 
-## Decision gate: output language
+## Decision gates
 
-Before doing anything else, ask the user which language they want `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` written in. If the answer is empty, gibberish, or an unrecognizable language name, fall back to English. If they pick anything other than English, surface the token-cost disclaimer in `references/workflow.md` Phase 0 before proceeding.
+Before doing anything else, ask the user which language they want `BUSINESS_OVERVIEW.md` and `TECHNICAL_DOMAIN_GUIDE.md` written in. Then apply this table. State the chosen mode in every deliverable.
 
-## Decision gate: analysis mode
+| Signal | Action |
+|---|---|
+| Language empty, gibberish, or unrecognized | Write in English |
+| Language other than English | Surface the token-cost disclaimer in `references/workflow.md` Phase 0, then proceed — do not wait for a second confirmation |
+| Single service or a user-scoped area | **Complete context mode.** Every inventory surface must end `complete`, `not-found-after-search`, or `not-applicable`. A partial result is a failure, not a deliverable. |
+| Whole-repo request over a large, legacy, or multi-context codebase | **Repository atlas mode.** Structural map of everything, full analysis of prioritized contexts, explicit coverage matrix. Never claim the whole business is covered. |
+| Phase 1 finds no domain artifacts | Write both overview files as an absence report. Do not invent product behavior or source references. |
 
-Choose one of two modes and state it in every deliverable:
-
-- **Complete context mode** — the default for a single service or a user-scoped area (e.g., "just the billing service"). Within the declared boundary, the coverage inventory must close fully before writing: every surface ends `complete`, `not-found-after-search`, or `not-applicable`. A partial result is a failure, not a deliverable.
-- **Repository atlas mode** — for whole-repo requests over large, legacy, or multi-context codebases. Produces a structural map of everything, full analysis of the prioritized contexts, and an explicit coverage matrix. It never claims the whole business is covered.
-
-Decide from the user's scope and the repo shape observed in Phase 1. If the scope cannot support complete mode, run atlas mode and say so.
+If the declared scope cannot support complete mode, run atlas mode and say so.
 
 ## Activation Contract
 
@@ -45,8 +46,6 @@ The two files below are written to `docs/` (or repo root if no `docs/`). When th
 Both documents end with a section for facts the repository cannot establish, such as missing external contracts or undocumented rationale. Inconsistencies and ambiguities found in the code are recorded as observations in the documents, not turned into questions for the user. Both state the commit or date they were generated from. Templates live in `assets/templates/`.
 
 ## Hard rules
-
-These are non-negotiable. They govern extraction discipline, the depth expectation of the deliverable, and the gate the agent must pass before writing.
 
 - **Evidence over assumption.** Every non-obvious claim in the technical guide carries `path/to/file.ext:line`. Drop or hedge what you cannot back. Every claim is typed — `observed`, `documented`, `synthesis`, `hypothesis`, `missing-evidence` — per `references/evidence-ledger.md`.
 - **Observed behavior only.** Document guards, constraints, transitions, calculations, permissions, naming mismatches, duplicated rules, unreachable branches, and conflicting evidence exactly as found. Code present is not code running: distinguish active behavior from config-dependent, inactive, test-only, and unreachable code. Do not mark expected behavior as fact and do not ask the user to resolve an inconsistency during discovery.

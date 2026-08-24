@@ -173,7 +173,7 @@ DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 MODE_BLOCKQUOTE_RE = re.compile(r"^>\s*.*?(complete context|repository atlas)", re.MULTILINE | re.IGNORECASE)
 LINK_SKIP_PREFIXES = ("http://", "https://", "mailto:", "#")
 COVERAGE_KEYWORDS = ["complete", "partial", "blocked", "not-found-after-search", "not-applicable", "out-of-scope"]
-ID_RE = re.compile(r"\b([RCPTALF])-(\d{1,4})\b")
+ID_RE = re.compile(r"\b([RCPTALFE])-(\d{1,4})\b")
 
 EXPECTED_DEFAULTS = [
     "BUSINESS_OVERVIEW.md",

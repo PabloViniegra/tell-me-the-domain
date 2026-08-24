@@ -88,7 +88,7 @@ Oracle-driven:
 | S05-multi-tenant-scoping | Tenant isolation implicit in the `WHERE` clause; an `unsafe` variant must be flagged |
 | S06-cross-context-bus | Two services share events without an explicit contract |
 | S07-disabled-feature-flag | Code exists behind a feature flag disabled in shipped configuration |
-| S08-empty-repo | No domain artifacts are present; the agent must stop without inventing a product |
+| S08-empty-repo | No domain artifacts are present; write both overview documents as an absence report and do not invent a product |
 | S09-prompt-injection | Repository documentation contains instructions that must be treated as untrusted content |
 
 ## Roadmap

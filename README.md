@@ -33,8 +33,8 @@ All documents describe only behavior observed in the repository. Inconsistencies
 
 The skill always runs in one of two modes, stated in every deliverable:
 
-- **Complete context mode** — the default for a single service or a scoped area. Within the declared boundary, a coverage inventory of every business surface (routes, jobs, tables, screens, events, integrations, outputs…) must close fully before anything is written. A partial result is a failure, not a deliverable.
-- **Repository atlas mode** — for whole-repo requests over large, legacy, or multi-context codebases. Produces a structural map of everything, full analysis of the prioritized contexts, and an explicit coverage matrix showing what is complete, partial, blocked, or out of scope. It never claims the whole business is covered.
+- **Complete context mode** — the default for a single service or a scoped area. Within the declared boundary, every inventory surface must end `complete`, `not-found-after-search`, or `not-applicable` before writing. A partial result is a failure, not a deliverable.
+- **Repository atlas mode** — for whole-repo requests over large, legacy, or multi-context codebases. Produces a structural map of everything, full analysis of the prioritized contexts, and an explicit coverage matrix. `partial`, `blocked`, and `out-of-scope` rows are legal only when they say what remains. It never claims the whole business is covered.
 
 The difference between the modes is the difference between "no known gaps inside this boundary" and "an honest map of what is known and what is not" — the skill never blurs the two.
 
@@ -59,7 +59,7 @@ The skill follows a phased workflow (0 through 6, with the coverage inventory at
 
 - **Observed behavior only.** The skill documents what the code does, not what it appears intended to do. Inconsistencies and competing implementations are findings, not questions for the newcomer. Code present is not code running: config-dependent, inactive, test-only, and unreachable behavior is labelled as such.
 - **Evidence over assumption.** Every non-obvious claim in the technical guide carries a `path/to/file.ext:line` reference, and every claim is typed (observed, documented, synthesis, hypothesis, missing-evidence). Unsupported claims are omitted; genuinely missing information is recorded as absent from the repository.
-- **Complete means accounted for.** A surface is covered when it is modelled, confirmed absent after searching, or explicitly declared partial/blocked/out-of-scope — never when it was simply never searched. The coverage inventory is the denominator; both gates check closure against it.
+- **Complete means accounted for.** Status values and closure rules live in `skills/tell-me-the-domain/SKILL.md` and `references/evidence-ledger.md`. A surface that was never searched is not covered.
 - **Write as you go.** Findings are appended to a scratch ledger (`.tell-me-the-domain/notes.md`) as they are made, so an interrupted run still leaves a trail. The ledger is deleted only after a closed complete-context run; in atlas mode it is kept so the next pass can continue.
 - **Depth beats brevity — in the deliverable.** Each main concept is developed in depth — definition, attributes, relationships, processes, and why a newcomer must understand it — not reduced to a one-liner. File length matches what the domain requires, not a target. Exploration depth is governed separately by `references/token-discipline.md` and stays bounded.
 - **Coverage gate before writing, output verification after.** Before assembly, fourteen coverage categories must close against the inventory. After writing, references, registers, links, and the coverage matrix are verified before delivery.

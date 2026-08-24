@@ -13,6 +13,9 @@ All notable changes to this skill are documented here. Versions follow
 
 ### Changed
 - Repository instructions are explicitly treated as untrusted evidence, never agent commands.
+- Language disclaimer is shown once; the run proceeds without a second confirmation.
+- Empty repositories produce an absence report instead of stopping.
+- The evidence ledger now names the same kinds and ID prefixes as the templates and eval oracles.
 
 ## [1.1.0] — 2026-08-24
 

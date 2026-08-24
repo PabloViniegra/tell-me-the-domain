@@ -22,9 +22,9 @@ One entry per finding:
 
 | Field | Values |
 |---|---|
-| `id` | Stable ID: `C-###` concept, `P-###` process, `R-###` rule, `A-###` actor, `T-###` term. The deliverables reference these IDs. |
+| `id` | Stable ID from the prefix table below. The deliverables reference these IDs. |
 | `context` | Bounded context or module it belongs to. |
-| `kind` | concept / process / rule / calculation / permission / lifecycle / integration / time / output / terminology. |
+| `kind` | One value from the kind table below. |
 | `claim` | The statement, in one sentence. |
 | `claim_type` | One of the five types above. |
 | `evidence` | `path:line` list; empty only for `missing-evidence`. |
@@ -34,10 +34,25 @@ One entry per finding:
 | `enforcement` | `db` / `domain` / `application` / `edge` / `docs-only` / `none`. Where the rule is enforced, not how much you trust it. |
 | `consistency` | `consistent` / `divergent` / `unknown` across layers. |
 | `runtime_status` | `active` / `config-dependent` / `inactive` / `test-only` / `unreachable` / `unknown`. Code present is not code running. |
-| `coverage_status` | `complete` / `partial` / `blocked`. |
+| `coverage_status` | Same six values as the inventory: `complete` / `partial` / `blocked` / `not-found-after-search` / `not-applicable` / `out-of-scope`. |
 | `next_search` | The next thing this finding tells you to look at, if any. |
 
 Confidence, enforcement, and consistency are separate axes on purpose: a rule enforced in one layer can be certain; three layers can repeat the same historical error.
+
+### Kinds and ID prefixes
+
+| Prefix | Kind | Use |
+|---|---|---|
+| `C` | `concept` | Entity, value object, aggregate |
+| `P` | `process` | End-to-end operation or journey |
+| `R` | `rule`, `calculation`, `permission`, `conflict`, `time`, `output`, `configuration`, `audit`, `ownership` | Invariant, formula, who-may, competing variants, deadline, outward artifact, flag/plan, audit trail, or authoritative owner |
+| `A` | `actor` | Human role, job, or external system that acts |
+| `T` | `terminology` | Domain term, synonym, or homonym |
+| `L` | `lifecycle` | Status set and transitions |
+| `E` | `integration` | Event, adapter, webhook, or bus contract |
+| `F` | `absent` | Fact the repository does not establish |
+
+Set `kind` to the specific value (`calculation`, `conflict`, `configuration`, …). The prefix stays `R` for every rule-shaped finding. Do not invent prefixes outside this table. Existing oracles that already use `R-` for calculations and conflicts stay valid.
 
 ## Coverage inventory
 

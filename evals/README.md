@@ -43,7 +43,7 @@ python3 evals/runner/run_all.py \
   --judge-cmd 'python3 evals/ci/run_judge.py'
 ```
 
-`evals/ci/run_agent.py` and `evals/ci/run_judge.py` are the default wrappers. They call `opencode run --auto`. Override the model with `TMTD_AGENT_MODEL` / `TMTD_JUDGE_MODEL`. The agent command receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
+`evals/ci/run_agent.py` and `evals/ci/run_judge.py` are the default wrappers. They call `opencode run --auto` with `opencode/mimo-v2.5-free` unless `TMTD_AGENT_MODEL` / `TMTD_JUDGE_MODEL` override it. The agent command receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
 
 ```
 {"facts":[{"id":"R-001","entailed":true,"score":0.93,"reason":"The document states the rule and cites its source span."}]}
@@ -53,7 +53,7 @@ The default acceptance threshold is `0.80`; use `--judge-threshold` to change it
 
 If a case contains `prompt.txt`, `run_case.py` uses it instead of the default wording. It substitutes `{case_id}`, `{repo}`, `{output}`, and `{focus}`; the generated prompt is saved in the run directory.
 
-The GitHub workflow always runs the runner contract tests. The black-box job defaults to `evals/ci/run_agent.py` and `evals/ci/run_judge.py`. Override them with repository variables `TMTD_AGENT_CMD` and `TMTD_JUDGE_CMD` if needed. It still needs a provider credential as a repository secret (`OPENCODE_API_KEY` or `ANTHROPIC_API_KEY`). It uploads generated overview documents only for manual runs, not pull requests.
+The GitHub workflow always runs the runner contract tests. The black-box job defaults to the wrappers above, one repeat, and 480s agent timeout. It still needs a provider credential as a repository secret (`OPENCODE_API_KEY` or `ANTHROPIC_API_KEY`) if the default free model is unavailable on the runner. It uploads generated overview documents only for manual runs, not pull requests.
 
 On pull requests, the black-box runner and its oracle cases come from the base revision while the candidate checkout is the agent's working directory. This keeps a change from rewriting the evaluator and its release gate; new cases begin gating after they land on the base branch.
 

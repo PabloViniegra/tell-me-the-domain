@@ -30,8 +30,10 @@ class AgentWrapperTests(unittest.TestCase):
         self.assertEqual(command[0], "opencode")
         self.assertIn("run", command)
         self.assertIn("--auto", command)
+        self.assertIn("--model", command)
         self.assertIn("/tmp/case-repo", joined)
         self.assertIn("/tmp/case-out", joined)
+        self.assertIn("complete context", joined)
 
 
 class JudgeWrapperTests(unittest.TestCase):

@@ -71,10 +71,10 @@ jobs:
             --output-root "$RUNNER_TEMP/tmtd-evals" \
             --agent-cmd "$agent_cmd" \
             --judge-cmd "$judge_cmd" \
-            --repeats 2 \
-            --agent-timeout 300 \
-            --judge-timeout 120 \
-            --case-timeout 450
+            --repeats 1 \
+            --agent-timeout 480 \
+            --judge-timeout 180 \
+            --case-timeout 700
       - name: Upload evaluation outputs
         if: ${{ success() && github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

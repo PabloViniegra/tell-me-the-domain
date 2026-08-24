@@ -40,7 +40,7 @@ def parse_judge_output(text: str, fact_ids: set[str]) -> dict:
 
 
 def build_command(prompt: str) -> list[str]:
-    model = os.environ.get("TMTD_JUDGE_MODEL", "").strip()
+    model = os.environ.get("TMTD_JUDGE_MODEL", "opencode/mimo-v2.5-free").strip() or "opencode/mimo-v2.5-free"
     command = [
         "opencode",
         "run",

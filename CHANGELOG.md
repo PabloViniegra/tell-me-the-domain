@@ -10,6 +10,7 @@ All notable changes to this skill are documented here. Versions follow
 - Entailment-judge support with source spans, generated documents, scores, and reasons.
 - Synthetic evaluation cases for disabled feature flags, empty repositories, and prompt injection.
 - Optional per-case `prompt.txt` files and forbidden-output checks for evaluation oracles.
+- `evals/ci/run_agent.py` and `evals/ci/run_judge.py` wrap `opencode run` for local and CI black-box evaluations.
 
 ### Changed
 - Repository instructions are explicitly treated as untrusted evidence, never agent commands.

@@ -14,6 +14,9 @@ evals/
 │       ├── oracle.json         # Facts the documents must contain
 │       ├── questions.json      # Newcomer questions answerable from the documents alone
 │       └── prompt.txt          # Optional per-case agent prompt
+├── ci/
+│   ├── run_agent.py            # Default OpenCode wrapper for the case agent
+│   └── run_judge.py            # Default OpenCode wrapper for the entailment judge
 └── runner/
     ├── check_outputs.py        # Structural checks + oracle scoring
     ├── run_case.py              # Materialize, invoke an agent, then check one case
@@ -36,11 +39,11 @@ Without `--judge-cmd`, the standalone checker uses required-term recall as a loc
 ```
 python3 evals/runner/run_all.py \
   --output-root /tmp/tmtd-evals \
-  --agent-cmd '<agent command>' \
-  --judge-cmd '<judge command>'
+  --agent-cmd 'python3 evals/ci/run_agent.py' \
+  --judge-cmd 'python3 evals/ci/run_judge.py'
 ```
 
-The agent command runs from the caller's working directory and receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`; it may also use `{repo}` and `{output}` as complete shell words. Prefer the environment variables when composing a quoted command. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
+`evals/ci/run_agent.py` and `evals/ci/run_judge.py` are the default wrappers. They call `opencode run --auto`. Override the model with `TMTD_AGENT_MODEL` / `TMTD_JUDGE_MODEL`. The agent command receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
 
 ```
 {"facts":[{"id":"R-001","entailed":true,"score":0.93,"reason":"The document states the rule and cites its source span."}]}
@@ -50,7 +53,7 @@ The default acceptance threshold is `0.80`; use `--judge-threshold` to change it
 
 If a case contains `prompt.txt`, `run_case.py` uses it instead of the default wording. It substitutes `{case_id}`, `{repo}`, `{output}`, and `{focus}`; the generated prompt is saved in the run directory.
 
-The GitHub workflow always runs the runner contract tests. Its black-box job is a required fail-closed gate: configure the repository variables `TMTD_AGENT_CMD` and `TMTD_JUDGE_CMD` before opening a PR. It uploads generated overview documents only for manual runs, not pull requests.
+The GitHub workflow always runs the runner contract tests. The black-box job defaults to `evals/ci/run_agent.py` and `evals/ci/run_judge.py`. Override them with repository variables `TMTD_AGENT_CMD` and `TMTD_JUDGE_CMD` if needed. It still needs a provider credential as a repository secret (`OPENCODE_API_KEY` or `ANTHROPIC_API_KEY`). It uploads generated overview documents only for manual runs, not pull requests.
 
 On pull requests, the black-box runner and its oracle cases come from the base revision while the candidate checkout is the agent's working directory. This keeps a change from rewriting the evaluator and its release gate; new cases begin gating after they land on the base branch.
 

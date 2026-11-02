@@ -41,9 +41,10 @@
       "id": "C-201",
       "kind": "concept",
       "importance": "important",
-      "statement": "A refund is a request to return a previously processed payment.",
-      "required_terms": ["refund"],
-      "expected_in": "business"
+      "statement": "A refund request is only accepted if it falls within a refund window: a limited number of days after a starting moment.",
+      "required_terms": ["refund", "window"],
+      "expected_in": "business",
+      "evidence": [{"path": "README.md", "lines": [3]}, {"path": "src/refunds/service.py", "lines": [10, 12]}]
     }
   ]
 }

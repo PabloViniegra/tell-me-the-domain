@@ -3,6 +3,12 @@
 All notable changes to this skill are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- The S03 oracle no longer expects the refund concept to mention a "previously
+  processed payment", which the case repository never establishes.
+
 ## [1.2.0] — 2026-11-02
 
 ### Fixed

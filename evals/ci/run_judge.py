@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
+import tempfile
 
 
 JSON_BLOCK_RE = re.compile(r"```(?:json)?\s*(\{.*\})\s*```", re.DOTALL)
@@ -39,21 +39,12 @@ def parse_judge_output(text: str, fact_ids: set[str]) -> dict:
     raise last_error
 
 
+DEFAULT_MODEL = "opencode/deepseek-v4.1-flash-free"
+
+
 def build_command(prompt: str) -> list[str]:
-    model = os.environ.get("TMTD_JUDGE_MODEL", "opencode/mimo-v2.5-free").strip() or "opencode/mimo-v2.5-free"
-    command = [
-        "opencode",
-        "run",
-        "--auto",
-        "--dir",
-        str(Path(__file__).resolve().parents[2]),
-        "--title",
-        "tmtd-eval-judge",
-        prompt,
-    ]
-    if model:
-        command[3:3] = ["--model", model]
-    return command
+    model = os.environ.get("TMTD_JUDGE_MODEL", "").strip() or DEFAULT_MODEL
+    return ["opencode", "run", "--auto", "--model", model, "--title", "tmtd-eval-judge", prompt]
 
 
 def main() -> int:
@@ -80,12 +71,14 @@ def main() -> int:
         f"{json.dumps(request)}"
     )
     try:
-        proc = subprocess.run(
-            build_command(prompt),
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        with tempfile.TemporaryDirectory(prefix="tmtd-judge-") as workdir:
+            proc = subprocess.run(
+                build_command(prompt),
+                cwd=workdir,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
     except OSError as exc:
         print(f"judge could not start: {exc}", file=sys.stderr)
         return 2

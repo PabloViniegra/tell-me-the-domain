@@ -22,12 +22,12 @@
 
 ## Three things that would surprise a newcomer
 
-[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Hard cap at three. Same findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer` in business language.]
+[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Hard cap at three. The same three findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer`, in the same order and with the identical italic headline; only the explanation after the headline changes register.]
 
-*Example:*
-1. *The "Paid" transition is guarded twice with different rules.* *`src/claims/service.py:142` allows `Submitted → Rejected`; `migrations/0042.sql:18` does not. Either side can be patched without the other noticing.* — `src/claims/service.py:142`, `migrations/0042.sql:18`
-2. *Pricing logic is duplicated in two places that diverge on rounding.* *`src/pricing/engine.py` uses banker's rounding; `src/payments/calculator.py` rounds half-up. There is no shared helper.* — `src/pricing/engine.py:201`, `src/payments/calculator.py:88`
-3. *The legacy `legacy_submit()` function has no callers.* *It is imported by a module whose own callers were removed; runtime status: unreachable.* — `src/claims/actions.py:204`
+*Example (headlines identical to the business overview example):*
+1. *The "Submit" button does not send the claim to the insurer.* *`submit_claim` only enqueues the claim for internal review; no insurer adapter is called on that path.* (R-003) — `src/claims/service.py:88`
+2. *"Reject" means two different things in the same flow.* *Internal-review and insurer rejections raise the same `ClaimRejected`; the email template does not branch on the source.* (R-011) — `src/claims/exceptions.py:12`, `templates/rejected.html:4`
+3. *A claim can be marked Paid in the database even if the service-layer guard is bypassed.* *`src/claims/service.py:142` rejects `Submitted → Paid`; `migrations/0042.sql:18` allows it. Either side can be patched without the other noticing.* (R-007) — `src/claims/service.py:142`, `migrations/0042.sql:18`
 
 ## Read these first
 
@@ -201,8 +201,10 @@ If the product has only one context, replace this section with: *"This product i
 
 List only facts that cannot be established from the repository, such as invisible external contracts or undocumented rationale. Do not ask a human to resolve an observed inconsistency; record the competing behaviors in the relevant sections above.
 
-1. **[Missing fact]** — [Evidence showing that the repository does not establish it: `path:line`.]
+1. **F-001 — [Missing fact]** — [Evidence showing that the repository does not establish it: `path:line`.]
+
+Every `F-` ID used in any document is defined here.
 
 *Example:*
-1. *Who negotiates the per-insurer fee schedule — product or finance? The code reads schedules from `config/fees/` but nothing in the repository identifies the owner or the cadence.*
-2. *What is the contractual SLA with each insurer after the 48h internal review window expires? The code escalates to a human but does not record what the insurer is then obligated to do.*
+1. *F-001 — Who negotiates the per-insurer fee schedule — product or finance? The code reads schedules from `config/fees/` but nothing in the repository identifies the owner or the cadence.*
+2. *F-002 — What is the contractual SLA with each insurer after the 48h internal review window expires? The code escalates to a human but does not record what the insurer is then obligated to do.*

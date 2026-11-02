@@ -1,3 +1,3 @@
-# Refund service (eval fixture S03)
+# Refund service
 
-Each refund request is checked against a refund window. The service, the database, and the tests disagree on how long that window is. The skill must record both variants as a conflict, not pick one.
+Each refund request is checked against a refund window.

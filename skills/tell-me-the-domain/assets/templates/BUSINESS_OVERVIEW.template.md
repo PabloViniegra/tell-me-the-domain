@@ -6,7 +6,7 @@
 
 ## Three things that would surprise a newcomer
 
-[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and references the evidence by rule ID. Hard cap at three; longer lists become decoration.]
+[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and references the evidence by rule ID. Use the same three findings, in the same order and with the identical italic headline, as `TECHNICAL_DOMAIN_GUIDE.md`. Hard cap at three; longer lists become decoration.]
 
 *Example:*
 1. *The "Submit" button does not send the claim to the insurer.* *It only enqueues the claim for Acme's internal review; nothing at that step contacts the insurer.* (R-003)
@@ -173,8 +173,8 @@ If the product has only one context, replace this section with: *"This product i
 
 ## What the code does not establish
 
-Record only missing evidence, such as an external contract, an undocumented rationale, or an actor not represented in the repository. Do not ask the reader to reconcile inconsistencies found in the code; describe those inconsistencies in the relevant section above with their rule IDs.
+Record only missing evidence, such as an external contract, an undocumented rationale, or an actor not represented in the repository. Do not ask the reader to reconcile inconsistencies found in the code; describe those inconsistencies in the relevant section above with their rule IDs. Reference each missing fact by the `F-` ID defined in `TECHNICAL_DOMAIN_GUIDE.md § Information absent from the repository`.
 
 *Example:*
-1. *Who owns the per-insurer fee schedule negotiation — product or finance? The system reads the schedules from configuration but nothing identifies the owner or the update cadence.*
-2. *What is the contractual SLA with the insurer after the 48h internal review window expires? The system escalates to a human but does not record what the insurer is obligated to do next.*
+1. *(F-001) Who owns the per-insurer fee schedule negotiation — product or finance? The system reads the schedules from configuration but nothing identifies the owner or the update cadence.*
+2. *(F-002) What is the contractual SLA with the insurer after the 48h internal review window expires? The system escalates to a human but does not record what the insurer is obligated to do next.*

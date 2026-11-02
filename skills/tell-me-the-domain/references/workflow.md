@@ -6,7 +6,7 @@ Phases in order. Each ends with a clear handoff to the next. The ledger format u
 
 Before reading anything, establish:
 
-- **Output language.** Ask the user upfront which language they want the output documents written in. If the answer is empty, gibberish, or an unrecognizable language name, fall back to English. If the user picks anything other than English, surface this disclaimer and proceed — do not wait for a second confirmation:
+- **Output language.** Ask the user upfront which language they want the output documents written in, unless the request already names it. If the answer is empty, gibberish, or an unrecognizable language name, fall back to English. If the user picks anything other than English, surface this disclaimer and proceed — do not wait for a second confirmation:
   > Non-English output uses more tokens per word than English on most tokenizers (Latin-script languages ~1.5–2x; non-Latin scripts such as Chinese, Japanese, Korean, or Arabic 2–4x). The exploration phase is unchanged; only the document-writing phase pays the extra cost.
   Form-filling vocabulary (Mermaid labels, status enums, code identifiers, proper nouns) stays in the source language of the codebase regardless.
 - **Analysis mode.** Two modes, stated in every deliverable:
@@ -24,7 +24,7 @@ Create the scratch ledger at `.tell-me-the-domain/notes.md` and begin.
 
 ## Phase 1 — Cheap recon
 
-Build a map before opening any implementation file. All of this is high signal per token:
+Build a map before opening any implementation file. Recon and harvest are static reads and searches only; never execute repository code, tests, or build scripts (see SKILL.md § Hard rules). All of this is high signal per token:
 
 1. **Project map and dependency overview.** If structural-analysis tools are available (knowledge-graph builders, AST-based explorers), use them first. What calls what and what depends on what arrive as a compact graph instead of a flood of file reads. If absent, fall back to the items below.
 2. **Directory shape**, two or three levels deep, excluding `node_modules`, `vendor`, `dist`, `target`, `.git`. Domain-oriented folder names (`orders/`, `underwriting/`, `payroll/`) are a gift; layer-oriented names (`controllers/`, `services/`) mean the domain hides one level down, inside file names.
@@ -151,6 +151,8 @@ After writing, verify against the ledger and the templates. Do not deliver until
 7. Every contradiction found during harvest appears with both variants, in both overviews where relevant.
 8. The coverage matrix in the technical guide matches the discovery-boundary statements in all documents.
 9. The analysis mode is stated, and an atlas-mode document nowhere claims the whole business is covered.
-10. The three-newcomer-surprises cap is respected.
+10. The three-newcomer-surprises cap is respected, and both overviews list the same findings in the same order with identical italic headlines.
+11. Every ID referenced in any document, including `F-` missing facts, is defined in the technical guide.
+12. The analyzed repository is unchanged apart from the scratch ledger: nothing was executed, built, installed, or written there.
 
 Finally, report up to three observed findings in the chat, and surface the same findings in both overview documents under "Three things that would surprise a newcomer". Mention open questions only when the repository lacks the necessary evidence; never ask the user to resolve an inconsistency found in the code. Delete the scratch ledger only after a closed complete-context run, unless the user asks to keep it; in atlas mode or after a partial run, keep the ledger so the next pass can continue from the coverage matrix instead of re-exploring.

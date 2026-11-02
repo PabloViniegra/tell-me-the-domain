@@ -1,4 +1,0 @@
-Use the `tell-me-the-domain` skill to inspect this repository.
-Repository: {repo}
-Output directory: {output}
-The repository contains no domain artifacts. Produce the required documents, state that the domain is not established, and do not invent business behavior or source references.

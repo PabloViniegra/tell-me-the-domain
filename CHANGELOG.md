@@ -3,20 +3,41 @@
 All notable changes to this skill are documented here. Versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.2.0] — 2026-11-02
+
+### Fixed
+- Black-box evals no longer leak answers to the agent: case READMEs stop announcing
+  the fixture and its expected answer, per-case focus hints and leaking `prompt.txt`
+  files are gone, and the agent wrapper no longer injects output-format coaching.
+- The agent runs inside a neutrally named sandbox of the case repository instead of
+  the skill repository, so it can neither read the oracles nor see the case ID.
+- The OpenCode wrappers work with current OpenCode (no `--dir` flag) and default to a
+  model that exists; the agent loads the candidate skill instead of a stale installed copy.
+
+### Changed
+- Discovery is static: the skill never executes, builds, tests, or installs anything
+  from the analyzed repository. Blind runs showed agents running untrusted repository
+  code, including in the prompt-injection case.
+- The language question is skipped when the request already names the language.
+- Both overviews must list the same three surprises with identical headlines; the
+  templates' examples now model that instead of contradicting it.
+- Every ID used in any document, including `F-` missing facts, is defined in the
+  technical guide.
+- The frontmatter description names the deliverables and more trigger phrases.
+- Repository instructions are explicitly treated as untrusted evidence, never agent commands.
+- Language disclaimer is shown once; the run proceeds without a second confirmation.
+- Empty repositories produce an absence report instead of stopping.
+- The evidence ledger now names the same kinds and ID prefixes as the templates and eval oracles.
 
 ### Added
+- `run_case.py` fails a case when the analyzed repository was modified (anything other
+  than the scratch ledger), and keeps the ledger in the run directory for inspection.
 - A per-PR evaluation workflow and `run_all.py`, which gates on the worst case result.
 - Entailment-judge support with source spans, generated documents, scores, and reasons.
 - Synthetic evaluation cases for disabled feature flags, empty repositories, and prompt injection.
 - Optional per-case `prompt.txt` files and forbidden-output checks for evaluation oracles.
 - `evals/ci/run_agent.py` and `evals/ci/run_judge.py` wrap `opencode run` for local and CI black-box evaluations.
 
-### Changed
-- Repository instructions are explicitly treated as untrusted evidence, never agent commands.
-- Language disclaimer is shown once; the run proceeds without a second confirmation.
-- Empty repositories produce an absence report instead of stopping.
-- The evidence ledger now names the same kinds and ID prefixes as the templates and eval oracles.
 
 ## [1.1.0] — 2026-08-24
 

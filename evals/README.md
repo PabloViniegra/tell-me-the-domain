@@ -13,7 +13,7 @@ evals/
 │       ├── repo/               # The codebase the skill is run against
 │       ├── oracle.json         # Facts the documents must contain
 │       ├── questions.json      # Newcomer questions answerable from the documents alone
-│       └── prompt.txt          # Optional per-case agent prompt
+│       └── prompt.txt          # Optional per-case agent prompt (must not hint at the answer)
 ├── ci/
 │   ├── run_agent.py            # Default OpenCode wrapper for the case agent
 │   └── run_judge.py            # Default OpenCode wrapper for the entailment judge
@@ -43,7 +43,7 @@ python3 evals/runner/run_all.py \
   --judge-cmd 'python3 evals/ci/run_judge.py'
 ```
 
-`evals/ci/run_agent.py` and `evals/ci/run_judge.py` are the default wrappers. They call `opencode run --auto` with `opencode/mimo-v2.5-free` unless `TMTD_AGENT_MODEL` / `TMTD_JUDGE_MODEL` override it. The agent command receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
+`evals/ci/run_agent.py` and `evals/ci/run_judge.py` are the default wrappers. They call `opencode run --auto` with `opencode/deepseek-v4.1-flash-free` unless `TMTD_AGENT_MODEL` / `TMTD_JUDGE_MODEL` override it; free model names change often, so check `opencode models` when a run fails to start. The agent wrapper copies `skills/tell-me-the-domain` from the candidate checkout to a temporary directory and points the agent at it, because installed copies of the skill may be stale. Set `TMTD_SKILL_DIR` to evaluate a skill from another checkout; the PR workflow sets it to the candidate, since the wrapper itself comes from the base revision. It answers the language question (English) and adds nothing else: no output-format coaching. The agent runs inside the case repository and cannot see the oracles. The judge runs in an empty temporary directory. The agent command receives `$TMTD_PROMPT`, `$TMTD_REPO`, and `$TMTD_OUTPUT_DIR`. The judge command receives one JSON request on stdin and must return one JSON object with one result per oracle fact:
 
 ```
 {"facts":[{"id":"R-001","entailed":true,"score":0.93,"reason":"The document states the rule and cites its source span."}]}
@@ -51,7 +51,9 @@ python3 evals/runner/run_all.py \
 
 The default acceptance threshold is `0.80`; use `--judge-threshold` to change it. Critical facts must be entailed. `run_all.py` runs every case, continues after failures, enforces per-agent, judge, and case timeouts, and exits with the worst exit code rather than averaging runs.
 
-If a case contains `prompt.txt`, `run_case.py` uses it instead of the default wording. It substitutes `{case_id}`, `{repo}`, `{output}`, and `{focus}`; the generated prompt is saved in the run directory.
+If a case contains `prompt.txt`, `run_case.py` uses it instead of the default wording, substituting `{repo}` and `{output}`; the generated prompt is saved in the run directory. Prompts and case READMEs must read like a real user request: never name the trap under test or the expected answer.
+
+`run_case.py` materializes each case in a neutrally named temporary sandbox (the case ID names the trap, so it never appears in the agent's paths), then copies the documents and any kept ledger into the run directory. If the analyzed repository changed in any way other than the scratch ledger — edited files, generated caches from executing code, documents written into the repo — the case fails, and the repository's final state is kept in `analyzed-repo/` inside the run directory.
 
 The GitHub workflow always runs the runner contract tests. The black-box job defaults to the wrappers above, one repeat, and 480s agent timeout. It still needs a provider credential as a repository secret (`OPENCODE_API_KEY` or `ANTHROPIC_API_KEY`) if the default free model is unavailable on the runner. It uploads generated overview documents only for manual runs, not pull requests.
 

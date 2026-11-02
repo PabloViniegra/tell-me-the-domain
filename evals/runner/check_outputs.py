@@ -15,6 +15,7 @@ PLACEHOLDERS = [
     "[Context name]",
     "[Concept]",
     "[Rule]",
+    "[Missing fact]",
     "[Name]",
     "[Term]",
     "[Role]",

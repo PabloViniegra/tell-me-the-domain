@@ -12,28 +12,37 @@ import run_agent
 import run_judge
 
 
+ROOT_SKILL = Path(__file__).resolve().parents[2] / "skills" / "tell-me-the-domain"
+
+
 class AgentWrapperTests(unittest.TestCase):
     def test_missing_env_is_infrastructure_failure(self):
         with patch.dict(os.environ, {}, clear=True):
             self.assertEqual(run_agent.main(), 2)
 
-    def test_builds_opencode_command_against_the_skill_repo(self):
+    def test_command_points_at_the_candidate_skill_without_format_coaching(self):
         env = {
             "TMTD_PROMPT": "Document this.",
             "TMTD_REPO": "/tmp/case-repo",
             "TMTD_OUTPUT_DIR": "/tmp/case-out",
         }
         with patch.dict(os.environ, env, clear=True):
-            command = run_agent.build_command()
+            command = run_agent.build_command(Path("/tmp/skill-copy"))
 
-        joined = " ".join(command)
-        self.assertEqual(command[0], "opencode")
-        self.assertIn("run", command)
-        self.assertIn("--auto", command)
-        self.assertIn("--model", command)
-        self.assertIn("/tmp/case-repo", joined)
-        self.assertIn("/tmp/case-out", joined)
-        self.assertIn("complete context", joined)
+        message = command[-1]
+        self.assertEqual(command[:3], ["opencode", "run", "--auto"])
+        self.assertNotIn("--dir", command)
+        self.assertIn("/tmp/skill-copy/SKILL.md", message)
+        self.assertNotIn("Coverage matrix", message)
+        self.assertNotIn("complete context", message)
+        self.assertIn("/tmp/case-repo", message)
+        self.assertIn("/tmp/case-out", message)
+
+    def test_skill_dir_override_selects_the_candidate_skill(self):
+        with patch.dict(os.environ, {"TMTD_SKILL_DIR": "/tmp/candidate/skills/tell-me-the-domain"}, clear=True):
+            self.assertEqual(run_agent.skill_source(), Path("/tmp/candidate/skills/tell-me-the-domain"))
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(run_agent.skill_source(), ROOT_SKILL)
 
 
 class JudgeWrapperTests(unittest.TestCase):

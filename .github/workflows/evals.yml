@@ -30,6 +30,8 @@ jobs:
       TMTD_JUDGE_MODEL: ${{ vars.TMTD_JUDGE_MODEL }}
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # The wrapper may come from the base revision; the skill under test must come from the candidate.
+      TMTD_SKILL_DIR: ${{ github.workspace }}/candidate/skills/tell-me-the-domain
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

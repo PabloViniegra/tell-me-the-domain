@@ -14,10 +14,10 @@
       "id": "E-501",
       "kind": "integration",
       "importance": "critical",
-      "statement": "Billing publishes InvoicePaid; notifications consumes it.",
+      "statement": "Billing produces an InvoicePaid event that notifications accepts, but nothing sends it on the declared billing-events bus: mark_paid returns the event and only the test hands it to the handler.",
       "required_terms": ["InvoicePaid"],
       "expected_in": "both",
-      "evidence": [{"path": "src/billing/service.py", "lines": [9, 10]}, {"path": "src/notifications/handler.py", "lines": [8]}]
+      "evidence": [{"path": "src/billing/service.py", "lines": [4, 9, 10]}, {"path": "src/notifications/handler.py", "lines": [8]}, {"path": "tests/test_cross_context.py", "lines": [8, 9]}]
     },
     {
       "id": "R-501",

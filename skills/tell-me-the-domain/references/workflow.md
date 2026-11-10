@@ -62,7 +62,7 @@ Rank every module in the inventory that shows non-trivial business logic; the in
 Read with intent, targeting the ranked files. Record each finding with the ledger schema — claim type, evidence, confidence, enforcement, consistency, runtime status. You are looking for:
 
 - **Invariants** — conditions the system refuses to violate: guard clauses, assertions, custom exceptions, validators, database constraints.
-- **Lifecycles** — status enums, state columns, transition tables, event names in the past tense (`OrderShipped`). Reconstruct the transitions the system permits and the ones it explicitly rejects (a guard or constraint that fires). A transition with no code behind it is an *absence*, not a prohibition — record it as unobserved, not as "deliberately impossible".
+- **Lifecycles** — status enums, state columns, transition tables, event names in the past tense (`PolicyRenewed`). Reconstruct the transitions the system permits and the ones it explicitly rejects (a guard or constraint that fires). A transition with no code behind it is an *absence*, not a prohibition — record it as unobserved, not as "deliberately impossible".
 - **Policies and calculations** — pricing, fees, tax, eligibility, scoring, limits, prorating. Magic numbers are candidate business decisions: record the value, the location, and whether it is configurable, and classify it (domain rule / application constraint / technical detail / unknown) instead of assuming every number is a business rule.
 - **Permissions and visibility** — who is allowed to do what. Role checks and tenant scoping describe the actors in the business as reliably as any org chart.
 - **Processes** — for every operation inventoried in Phase 1b (route, command, job, consumer, webhook, screen action), trace it end to end: trigger → decisions → state changes → side effects (persistence, events, integrations) → visible outcome → failure and recovery paths. Every operation ends in one of four states: `traced`, `passthrough` (confirmed to carry no decision logic), `out-of-scope`, or `blocked`. An untraced operation is a coverage gap, not an omission you get to make silently.
@@ -74,7 +74,7 @@ Two shortcuts that repeatedly pay off:
 - **Tests are the specification the business actually agreed to.** Test names in a domain test file often read as a requirements list. Read those names before reading the implementation.
 - **Error messages and validation copy are business rules in plain language.** Grep the message catalogue or i18n files.
 
-For every rule or discrepancy, note what the code enforces, where (`path:line`), and what happens when it is violated. Record undocumented rationale as `missing-evidence`, not as a question about what the system should do. If multiple locations disagree, record each behavior with `consistency: divergent` and document the conflict directly.
+For every rule or discrepancy, note what the code enforces, where (`path:line`), and what happens when it is violated. Record undocumented rationale as `missing-evidence`, not as a question about what the system should do. If multiple locations disagree, record each behavior with `consistency: divergent` and document the conflict directly, naming every layer involved — including which value the tests assert, or that no test covers it.
 
 ### Phase 3b — Coverage gate (mandatory before assembly)
 
@@ -95,7 +95,7 @@ The business cannot be learned partially. Before moving to assembly, verify agai
 13. **Terminology** — every domain term encountered appears in the glossary with its synonyms, homonyms, and where it is defined.
 14. **Missing information** — every fact the repository cannot establish is listed, with the evidence of its absence.
 
-If any line is incomplete in complete context mode, expand the ledger before assembly — do not write. In atlas mode, incomplete lines must appear in the coverage matrix and the discovery boundary of both overview documents.
+If any line is incomplete in complete context mode, expand the ledger before assembly — do not write. If a line cannot be closed (budget exhausted, evidence blocked, a tool unavailable), switch to atlas mode: keep the open rows `partial` or `blocked` with their reason, and state the switch in every deliverable. In atlas mode, incomplete lines must appear in the coverage matrix and the discovery boundary of both overview documents.
 
 ## Phase 4 — Assemble the model
 
@@ -118,7 +118,7 @@ Answer "where does the value live" with typed claims, because the repository can
 - **Synthesis** — "everything else exists to feed this engine" is your analysis; label it as such.
 - **Not established** — "this is why customers buy" is usually invisible from code; record it under missing information instead of inventing it.
 
-Then close honestly. List what you could not determine: rules with no discoverable rationale, dead or ambiguous code, external systems whose contract is invisible from here. Phrase each as a question addressed to a person who would know — these are the newcomer's agenda for their first week.
+Then close honestly. List what the repository cannot establish: rules with no discoverable rationale, external systems whose contract is invisible from here, actors the code never represents. Give each an `F-` ID and phrase it as a question addressed to a person who would know — these are the newcomer's agenda for their first week. Dead, ambiguous, or contradictory code is not on this list: it is observed behavior, recorded in the risks and rules sections with its runtime status and evidence, never turned into a question.
 
 ## Phase 6 — Write the documents
 
@@ -132,7 +132,7 @@ Every overview file links to every per-context file, and every per-context file'
 
 Calibrate the register:
 
-- `BUSINESS_OVERVIEW.md` must be readable by someone who has never seen the code. No file paths, no class names, no framework names. Rules and concepts reference the technical guide by ID (`R-003`, `C-002`) — never by `path:line`. If a rule cannot be stated in business language, state its effect instead: not "`validateSlaWindow` throws after 48h" but "a claim not reviewed within two days is escalated automatically".
+- `BUSINESS_OVERVIEW.md` must be readable by someone who has never seen the code. No file paths, no class names, no framework names. Rules and concepts reference the technical guide by ID (`R-003`, `C-002`) — never by `path:line`. If a rule cannot be stated in business language, state its effect instead: not "`checkConfirmationWindow` throws after 24h" but "a berth request not confirmed within a day is flagged for the harbourmaster".
 - `TECHNICAL_DOMAIN_GUIDE.md` is for someone about to change something. Lead with where the domain lives and what breaks if they touch it. Every rule gets its ID, its evidence references, and its confidence/enforcement/consistency axes.
 - Per-context `domains/<context>.md` files use the business register with ID references; the `path:line` evidence lives in the technical guide.
 
@@ -153,6 +153,6 @@ After writing, verify against the ledger and the templates. Do not deliver until
 9. The analysis mode is stated, and an atlas-mode document nowhere claims the whole business is covered.
 10. The three-newcomer-surprises cap is respected, and both overviews list the same findings in the same order with identical italic headlines.
 11. Every ID referenced in any document, including `F-` missing facts, is defined in the technical guide.
-12. The analyzed repository is unchanged apart from the scratch ledger: nothing was executed, built, installed, or written there.
+12. The analyzed repository is unchanged apart from the scratch ledger and the requested documents at their output location: nothing was executed, built, installed, or otherwise written there.
 
 Finally, report up to three observed findings in the chat, and surface the same findings in both overview documents under "Three things that would surprise a newcomer". Mention open questions only when the repository lacks the necessary evidence; never ask the user to resolve an inconsistency found in the code. Delete the scratch ledger only after a closed complete-context run, unless the user asks to keep it; in atlas mode or after a partial run, keep the ledger so the next pass can continue from the coverage matrix instead of re-exploring.

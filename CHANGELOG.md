@@ -5,9 +5,42 @@ All notable changes to this skill are documented here. Versions follow
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-11-10
+
 ### Fixed
 - The S03 oracle no longer expects the refund concept to mention a "previously
   processed payment", which the case repository never establishes.
+- Template and reference examples no longer reuse the vocabulary, file paths,
+  and rules of eval cases S01–S04 (claims, insurer fee files, refund windows,
+  `OrderShipped`); they use a fictional marina domain instead, so copying an
+  example can no longer satisfy an oracle.
+- The S01 oracle no longer claims that claims are identified by
+  `(hospital_id, insurer_ref)`; the repository only makes both fields mandatory.
+- Output verification allows the requested documents in the analyzed repository,
+  matching the default `docs/` output location.
+- Phase 5 no longer turns dead or ambiguous code into questions for the reader.
+- A complete-context run that cannot close its inventory switches to atlas mode
+  and says so, instead of having no defined outcome.
+- Surprise sections may list fewer than three findings, and the technical guide's
+  permission table uses `R-` IDs for permissions and `A-` IDs for actors.
+- The output checker reads placeholders from the skill templates and matches
+  them outside inline code (so `[...]` in a JSON snippet is not a placeholder),
+  accepts `path:line:col` and validates `path:start-end`, ignores nested bullets
+  in the surprise cap, enforces surprise order, requires every ID referenced by
+  the business overview or per-context files to appear in the technical guide
+  (even when the guide defines none; the header's ID legend counts on neither
+  side), accepts written-out dates such as "10 November 2026", checks date and
+  mode in per-context files, and resolves their relative links from `domains/`.
+- The S02 oracle no longer claims pricing applies the configured `half_up` rule;
+  the engine never reads that key and uses Python's `round` (ties to even).
+- Divergent rules must name every layer involved, including which value the
+  tests assert.
+- The S06 oracle no longer claims billing publishes `InvoicePaid`; the bus is
+  declared but never used, and only the test hands the event to the handler.
+- The S05 oracle no longer expects the guide to say `list_tickets_unsafe` "must
+  not be used"; the skill records behavior and never prescribes corrections.
+- Instruction-like repository content is named plainly as untrusted content and a
+  prompt-injection attempt, not only described.
 
 ## [1.2.0] — 2026-11-02
 

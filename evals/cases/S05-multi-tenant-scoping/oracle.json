@@ -32,7 +32,7 @@
       "id": "R-402",
       "kind": "rule",
       "importance": "critical",
-      "statement": "list_tickets_unsafe returns rows across all tenants — must not be used.",
+      "statement": "list_tickets_unsafe ignores its tenant_id argument and returns rows across all tenants.",
       "required_terms": ["list_tickets_unsafe", "tenant"],
       "expected_in": "technical",
       "evidence": [{"path": "src/tickets/service.py", "lines": [10, 12]}]

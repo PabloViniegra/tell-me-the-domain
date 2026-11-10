@@ -6,18 +6,18 @@
 
 ## Three things that would surprise a newcomer
 
-[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and references the evidence by rule ID. Use the same three findings, in the same order and with the identical italic headline, as `TECHNICAL_DOMAIN_GUIDE.md`. Hard cap at three; longer lists become decoration.]
+[Up to three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Each states what is surprising, why it is surprising, and references the evidence by rule ID. Use the same findings, in the same order and with the identical italic headline, as `TECHNICAL_DOMAIN_GUIDE.md`. Hard cap at three; longer lists become decoration. If the repository yields fewer surprising observations, list only those; in an absence report, the absence itself is the finding.]
 
 *Example:*
-1. *The "Submit" button does not send the claim to the insurer.* *It only enqueues the claim for Acme's internal review; nothing at that step contacts the insurer.* (R-003)
-2. *"Reject" means two different things in the same flow.* *Internal-review rejections and insurer rejections share one exception but require different downstream handling; the email template currently treats them identically.* (R-011)
-3. *A claim can be marked Paid in the database even if the service-layer guard is bypassed.* *The service guard and the database constraint reject different transitions — either side can be patched without the other noticing.* (R-007)
+1. *The "Confirm" button does not reserve the berth.* *It only places the booking in the harbourmaster's queue; no berth is held at that step.* (R-003)
+2. *"Cancel" means two different things in the same flow.* *Skipper cancellations and weather closures share one event but lead to different follow-ups; the cancellation email currently treats them identically.* (R-011)
+3. *A booking can be marked Checked In in the database even if the service-layer guard is bypassed.* *The service guard and the database constraint reject different transitions — either side can be patched without the other noticing.* (R-007)
 
 ## In one paragraph
 
 [What the product does, for whom, and the problem it removes — only if the repository establishes these. Plain language, no technical terms. Do not state market size, customer counts, or commercial model unless the repository documents them. If someone reads only this paragraph, they should be able to describe the product in a meeting.]
 
-*Example —* *Acme Claims is a web platform that lets hospital billing teams submit, track, and contest insurance claims. It centralizes insurer responses and surfaces the ones that need a human reply.*
+*Example —* *Tidewater Marina is a booking platform that lets visiting skippers request berths and lets the harbourmaster confirm, check in, and close each stay. It centralizes berth availability and surfaces the bookings that need a human decision.*
 
 ## Who uses it
 
@@ -28,9 +28,9 @@
 | [Role] | [Their main actions] | [Meaningful restrictions] |
 
 *Example —*
-| *Hospital biller* | *Files claims, replies to insurer objections, exports monthly reports.* | *Cannot approve payouts or change fee schedules.* |
-| *Acme reviewer* | *Approves contested claims, sets review priorities, escalates SLA breaches.* | *Cannot impersonate a biller in the portal.* |
-| *Nightly reconciliation job* | *Re-reads insurer responses and flags claims whose state diverges.* | *Cannot change claim state; it only raises review tasks.* |
+| *Visiting skipper* | *Requests berths, registers the boat, cancels stays.* | *Cannot choose a specific berth or change seasonal tariffs.* |
+| *Harbourmaster* | *Confirms requests, assigns berths, checks boats in and out.* | *Cannot confirm a booking for a boat they own.* |
+| *Nightly occupancy job* | *Compares checked-in boats with berth sensors and flags mismatches.* | *Cannot change booking state; it only raises inspection tasks.* |
 
 ## Concept index
 
@@ -68,23 +68,23 @@ Use the code's observed terminology. If the interface and the implementation use
 
 **Why a newcomer must understand it.** [What decisions a new joiner will make in their first weeks that depend on this concept, and what they will get wrong without the mental model. Frame this in business terms, not code terms.]
 
-*Example — Claim.*
+*Example — Booking.*
 
-*What it is.* A request for reimbursement a hospital sends to an insurer. Each Claim starts as a draft, moves through review, and ends either paid or rejected. After rejection it is not edited in place — a new Claim is filed with corrections — so the lifecycle is forward-only with rejection as a terminal state that may seed a successor.
+*What it is.* A skipper's request to moor one boat at the marina for a range of nights. Each Booking starts as a request, is confirmed by the harbourmaster, and ends either completed or cancelled. A cancelled Booking is never reopened — the skipper files a new request — so the lifecycle is forward-only with cancellation as a terminal state.
 
-*Attributes and shape.* A status (Draft, Submitted, In Review, Paid, Rejected), a hospital, an insurer reference, a 48-hour review deadline measured from the moment the reviewer is assigned, a single reviewer assigned for the duration of the claim, and a monetary amount stored in cents and rendered as dollars in the UI. The status field drives nearly every branch in the system; "Rejected" is two distinct enum values that downstream code treats differently (see § Terminology traps).
+*Attributes and shape.* A status (Requested, Confirmed, Checked In, Completed, Cancelled), a boat, an arrival and departure date, a berth assigned on confirmation, a 24-hour confirmation window measured from the request, and the boat's length stored in centimetres and shown in metres in the UI. The status field drives nearly every branch in the system; "Cancelled" covers two distinct causes that downstream code treats differently (see § Terminology traps).
 
-*Relationships with other concepts.* A Claim belongs to exactly one Hospital and one Insurer. It has zero or one assigned Reviewer (mandatory once Submitted; never swapped after Paid). It owns zero or many ReviewEvents — append-only records of who did what and when. On Paid, it generates exactly one Payment and one line on the Hospital's monthly Invoice. On Rejected, it does not mutate itself: a new Claim is filed with corrections, and the original is archived for audit.
+*Relationships with other concepts.* A Booking belongs to exactly one Boat and one Skipper. It has zero or one assigned Berth (mandatory once Confirmed; never swapped after Checked In). It owns zero or many HarbourLog entries — append-only records of who did what and when. On Completed, it generates exactly one Stay Charge. On Cancelled, it does not mutate further: a new Booking is requested instead, and the original is kept for audit.
 
 *Processes it participates in.*
 
-- *Submission* — a Hospital biller files the Claim from the portal; the system assigns a Reviewer and starts the 48h clock.
-- *Review* — the assigned Reviewer moves the Claim from Submitted to In Review to Paid or Rejected within 48h; missing the deadline escalates to a human but does not auto-decide.
-- *Payout* — on Paid, the Claim triggers a Payment and a line on the Hospital's monthly Invoice.
-- *Contention* — on Rejected, the Claim returns to the biller with the rejection reason attached; a new Claim may be filed with corrections.
-- *Audit* — every status transition writes a ReviewEvent; the Claim is the root of the audit trail.
+- *Request* — a Skipper files the Booking from the portal; the system starts the 24-hour confirmation clock.
+- *Confirmation* — the Harbourmaster assigns a Berth and moves the Booking to Confirmed; missing the window flags the request but does not auto-decide.
+- *Arrival* — on check-in, the Booking becomes Checked In and the berth is marked occupied.
+- *Departure* — on check-out, the Booking is Completed and a Stay Charge is issued.
+- *Audit* — every status transition writes a HarbourLog entry; the Booking is the root of the audit trail.
 
-*Why a newcomer must understand it.* Pricing, deadlines, notifications, audit logs, and monthly invoicing all branch on the Claim's status. New joiners should design features by asking first: "which Claim statuses does this apply to, and which must it never touch?"
+*Why a newcomer must understand it.* Berth availability, charges, notifications, and audit logs all branch on the Booking's status. New joiners should design features by asking first: "which Booking statuses does this apply to, and which must it never touch?"
 
 ## Process catalog
 
@@ -115,11 +115,10 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft
-    Draft --> Submitted: submitted by [actor]
-    Submitted --> Approved: [condition]
-    Submitted --> Rejected: [condition]
-    Approved --> [*]
+    [*] --> [Initial state]
+    [Initial state] --> [Next state]: [trigger] by [actor]
+    [Next state] --> [Terminal state]: [condition]
+    [Terminal state] --> [*]
 ```
 
 ## The rules of the game
@@ -128,7 +127,7 @@ The conditions the system enforces, in business language. Each states what is re
 
 | ID | Rule | Why it matters | What happens if broken |
 |---|---|---|---|
-| R-001 | [A claim cannot be paid before it is reviewed] | [Prevents paying invalid claims] | [The payment is refused and the claim returns to review] |
+| R-001 | [What must hold, in business language] | [Rationale, or "rationale not stated in the repository"] | [What the system does when it is not met] |
 
 [When the repository does not state a rationale, write "rationale not stated in the repository" — do not invent one.]
 
@@ -136,7 +135,7 @@ The conditions the system enforces, in business language. Each states what is re
 
 [The one or two mechanisms this system implements that concentrate its differentiating logic — a calculation, an integration, accumulated data, a manual process it eliminates. Label each claim: *observed mechanism* (the code shows it), *synthesis* (your reading of the evidence), or *not established* (commercial value the repository cannot prove). Never state that "everything else exists to support this" as fact.]
 
-*Example:* *The pricing engine converts insurer fee schedules into per-claim amounts, including ~40 insurer-specific rounding rules (observed mechanism — R-014 through R-053). Whether this engine is the reason customers buy the product is not established by the repository.*
+*Example:* *The berth allocator matches boat length and draught against free berths, including ~40 berth-class exceptions (observed mechanism — R-014 through R-053). Whether this allocator is the reason marinas adopt the product is not established by the repository.*
 
 ## Vocabulary
 
@@ -145,8 +144,8 @@ The conditions the system enforces, in business language. Each states what is re
 | [Term] | [One-line definition] | [Alias in the interface or in the code] |
 
 *Example:*
-| *Claim* | *A request for reimbursement sent by a hospital to an insurer.* | *`Claim`, `claim_request`, "case" in older UI strings.* |
-| *Reviewer* | *An Acme employee authorized to approve or reject claims.* | *`claims_reviewer`, "approver" in legacy reports.* |
+| *Booking* | *A skipper's request to moor one boat for a range of nights.* | *`Booking`, `berth_request`, "reservation" in older UI strings.* |
+| *Harbourmaster* | *A marina employee authorized to confirm bookings and assign berths.* | *`harbour_staff`, "dockmaster" in legacy reports.* |
 
 ## Terminology traps
 
@@ -157,8 +156,8 @@ Cross-team vocabulary mismatches observed in the code. Each row names the trap, 
 | [Term as it appears in code or UI] | [What the business actually means] | [The wrong assumption a newcomer would make] | [R-NNN / T-NNN] |
 
 *Example:*
-| *"Submit" (button label)* | *"Send to internal review"* | *The UI says "Submit" but the action only moves the claim into Acme's review queue — it does not send anything to the insurer.* | R-003 |
-| *"Reject" (in code)* | *"Return to biller with reason"* | *One exception covers both internal-review rejections and insurer rejections; the downstream email template treats them identically.* | R-011 |
+| *"Confirm" (button label)* | *"Send to the harbourmaster's queue"* | *The UI says "Confirm" but the action only queues the request — no berth is held yet.* | R-003 |
+| *"Cancel" (in code)* | *"Skipper withdrew" or "marina closed for weather"* | *One event covers both causes; the downstream cancellation email treats them identically.* | R-011 |
 
 ## Related contexts
 
@@ -176,5 +175,5 @@ If the product has only one context, replace this section with: *"This product i
 Record only missing evidence, such as an external contract, an undocumented rationale, or an actor not represented in the repository. Do not ask the reader to reconcile inconsistencies found in the code; describe those inconsistencies in the relevant section above with their rule IDs. Reference each missing fact by the `F-` ID defined in `TECHNICAL_DOMAIN_GUIDE.md § Information absent from the repository`.
 
 *Example:*
-1. *(F-001) Who owns the per-insurer fee schedule negotiation — product or finance? The system reads the schedules from configuration but nothing identifies the owner or the update cadence.*
-2. *(F-002) What is the contractual SLA with the insurer after the 48h internal review window expires? The system escalates to a human but does not record what the insurer is obligated to do next.*
+1. *(F-001) Who sets the seasonal berth tariffs — the marina operator or the port authority? The system reads the tariffs from configuration but nothing identifies the owner or the update cadence.*
+2. *(F-002) What happens to a confirmed berth when a weather closure lasts beyond three days? The system flags the booking but does not record what the marina then owes the skipper.*

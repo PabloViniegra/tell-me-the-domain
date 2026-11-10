@@ -10,171 +10,25 @@ from pathlib import Path
 from process_utils import terminate_process
 
 
-PLACEHOLDERS = [
-    "[Product name]",
-    "[Context name]",
-    "[Concept]",
-    "[Rule]",
-    "[Missing fact]",
-    "[Name]",
-    "[Term]",
-    "[Role]",
-    "[commit / date]",
-    "[commit/date]",
-    "[commit]",
-    "[Name]",
-    "[commit / date]",
-    "[Source]",
-    "[Destination context]",
-    "[Other contexts, or \"none\"]",
-    "[n]",
-    "[n]",
-    "[n]",
-    "[status]",
-    "[what remains, if anything]",
-    "[Bounded contexts and products analyzed.]",
-    "[Modules and deployables owned by this context.]",
-    "[Areas of this context intentionally not read and why.]",
-    "[Areas intentionally not read and why — atlas mode only.]",
-    "[Areas intentionally not read and why.]",
-    "[Missing tools, unavailable contracts, or facts that could not be established from the repository.]",
-    "[Missing tools, unavailable contracts, or facts that could not be established from this context.]",
-    "[Contexts and deployables analyzed.]",
-    "[Code map for the developer-side output.]",
-    "[Highlighted journeys in the next section]",
-    "[High-level]",
-    "[Narrate the same flow in two or three sentences: what starts it, what has to be true along the way, what the business gets at the end. Include the failure and exception paths that change the outcome.]",
-    "[Tradeoff: this section includes the failure and exception paths that change the outcome.]",
-    "[NIT]",
-    "[path/to/file.ext:line]",
-    "[mode]",
-    "[complete context / repository atlas]",
-    "[complete context/repository atlas]",
-    "[scope]",
-    "[date]",
-    "[trigger]",
-    "[outcome]",
-    "[actor]",
-    "[Who starts it]",
-    "[What starts it]",
-    "[What the business gets]",
-    "[What happens when violated]",
-    "[Source of the rule]",
-    "[Where defined (see technical guide)]",
-    "[Claimed mechanism]",
-    "[Reviewed]",
-    "[Modified]",
-    "[Source: buyer, reviewer, scheduler, etc.]",
-    "[NIT-001]",
-    "[Critical]",
-    "[incidental]",
-    "[Mode reference]",
-    "[sentence]",
-    "[One-line]",
-    "[Concept meaning]",
-    "[paths to source code files]",
-    "[Method]",
-    "[Action]",
-    "[Method of enforcement]",
-    "[Concrete example]",
-    "[Status]",
-    "[complete, partial, blocked, out-of-scope, no longer applicable]",
-    "[some code path]",
-    "[adapt to the case]",
-    "[example counterparty file:line]",
-    "[path/to/source.py]",
-    "[Template approach]",
-    "[organization-team]",
-    "[ingestion-team]",
-    "[Version]",
-    "[Rule]",
-    "[Concept]",
-    "[Exclusions]",
-    "[Claim type to focus on]",
-    "[Channel]",
-    "[SLA parameters]",
-    "[inbound / outbound]",
-    "[Business role]",
-    "[Adapter]",
-    "[Adapter or gateway]",
-    "[Per-minute rate cap]",
-    "[HTTP code]",
-    "[Trigger type]",
-    "[Cron or event]",
-    "[Business effect]",
-    "[field name]",
-    "[requirement string]",
-    "[maximum spend]",
-    "[outcome]",
-    "[outcome that matters]",
-    "[delivery confirmation source]",
-    "[failure]",
-    "[recovery]",
-    "[actor, role, system]",
-    "[diagnosis source]",
-    "[expected outcome]",
-    "[duration before pause kicks in]",
-    "[how long it can persist]",
-    "[rate limiter per minute]",
-    "[subscription tier, by region]",
-    "[Blocking reason]",
-    "[or \"None\"]",
-    "[other contexts, or \"none\"]",
-    "[other contexts, or 'none']",
-    "[Source context]",
-    "[destination-context]",
-    "[Reading route to destination]",
-    "[set]",
-    "[expiration pattern]",
-    "[outcome / end state]",
-    "[Next checkpoint]",
-    "[reference to next context]",
-    "[404, 409, etc.]",
-    "[invariant label]",
-    "[error or HTTP status]",
-    "[expiration rule for test]",
-    "[test directory path]",
-    "[reference lines]",
-    "[hash or version reference]",
-    "[trace example]",
-    "[DRI for response]",
-    "[Inbound/outbound address]",
-    "[note one example with file:line]",
-    "[Failure scenario]",
-    "[expected outcome when missing]",
-    "[recovery when delayed]",
-    "[Subject area]",
-    "[Source reads]",
-    "[target writes]",
-    "[field name with type]",
-    "[maximum attempt]",
-    "[condition for allow / refuse]",
-    "[Captured event type]",
-    "[SLA duration]",
-    "[failure impact per contract]",
-    "[fixing commit]",
-    "[fixing patch release]",
-    "[team, individual, automation]",
-    "[retry depth, idempotency token]",
-    "[name and path of the file with the rule]",
-    "[test that asserts the violation]",
-    "[explanation of the unit conversion]",
-    "[adapter framework]",
-    "[step onboarding of new joiners]",
-    "[reference ADR or policy doc]",
-]
+TEMPLATE_SUBDIR = Path("skills") / "tell-me-the-domain" / "assets" / "templates"
+# Bracketed template text, excluding Markdown link texts, Mermaid node labels such as A[Step], and [*].
+PLACEHOLDER_RE = re.compile(r"(?<![\w\]])\[(?!\*\])[^\[\]\n]+\](?!\()")
 
 SURPRISE_HEADING = "Three things that would surprise a newcomer"
-PATH_LINE_RE = re.compile(r"`([\w./\-]+\.[a-zA-Z0-9]{1,10}):(\d+)(?::(\d+))?`")
+PATH_LINE_RE = re.compile(r"`([\w./\-]+\.[a-zA-Z0-9]{1,10}):(\d+)(?:-(\d+))?(?::\d+)?`")
 RELATIVE_LINK_RE = re.compile(r"\[(?P<text>[^\]]+)\]\((?P<href>[^)]+)\)")
 BUSINESS_PATH_RE = re.compile(r"`[\w./\-]+\.[a-zA-Z0-9]{1,10}:\d+(?::\d+)?`")
 BUSINESS_PATH_BARE_RE = re.compile(r"(?<!`)[\w./\-]+\.[a-zA-Z0-9]{1,10}:\d+(?::\d+)?")
-COMMIT_RE = re.compile(r"\b[0-9a-f]{7,40}\b")
-DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+COMMIT_RE = re.compile(r"\b(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b")
+_MONTH = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?"
+DATE_RE = re.compile(
+    rf"\b(?:\d{{4}}-\d{{2}}-\d{{2}}|\d{{1,2}} {_MONTH} \d{{4}}|{_MONTH} \d{{1,2}},? \d{{4}})\b"
+)
 MODE_BLOCKQUOTE_RE = re.compile(r"^>\s*.*?(complete context|repository atlas)", re.MULTILINE | re.IGNORECASE)
 LINK_SKIP_PREFIXES = ("http://", "https://", "mailto:", "#")
 COVERAGE_KEYWORDS = ["complete", "partial", "blocked", "not-found-after-search", "not-applicable", "out-of-scope"]
 ID_RE = re.compile(r"\b([RCPTALFE])-(\d{1,4})\b")
+INLINE_CODE_RE = re.compile(r"`[^`\n]*`")
 
 EXPECTED_DEFAULTS = [
     "BUSINESS_OVERVIEW.md",
@@ -322,8 +176,20 @@ def read_outputs(out_dir: Path, case_dir: Path):
     return files, repo_dir
 
 
-def check_kind(name: str, kind: str, errors: list) -> None:
-    errors.append((kind, f"{name}: placeholder {('placeholder' if False else 'check')} failed"))
+def template_dirs() -> list[Path]:
+    dirs = [Path(__file__).resolve().parents[2] / TEMPLATE_SUBDIR]
+    candidate = os.environ.get("TMTD_SKILL_DIR", "").strip()
+    if candidate:
+        dirs.append(Path(candidate) / "assets" / "templates")
+    return dirs
+
+
+def load_placeholders() -> set:
+    placeholders = set()
+    for directory in template_dirs():
+        for template in sorted(directory.glob("*.template.md")):
+            placeholders.update(PLACEHOLDER_RE.findall(template.read_text(encoding="utf-8")))
+    return placeholders
 
 
 def add(errors: list, kind: str, message: str) -> None:
@@ -340,13 +206,13 @@ def evaluation_environment(extra: dict | None = None) -> dict:
     return env
 
 
-def check_no_placeholders(name: str, text: str, errors: list) -> None:
+def check_no_placeholders(name: str, text: str, placeholders: set, errors: list) -> None:
     if text is None:
         add(errors, "structural", f"{name}: missing")
         return
-    for placeholder in PLACEHOLDERS:
-        if placeholder in text:
-            add(errors, "structural", f"{name}: contains placeholder {placeholder!r}")
+    found = set(PLACEHOLDER_RE.findall(INLINE_CODE_RE.sub("", text))) & placeholders
+    for placeholder in sorted(found):
+        add(errors, "structural", f"{name}: contains placeholder {placeholder!r}")
 
 
 def check_paths(name: str, text: str, errors: list) -> None:
@@ -392,10 +258,10 @@ def check_references_against_repo(name: str, text: str, repo_dir: Path, errors: 
         if end:
             end_no = int(end)
             if end_no < line_no or end_no > len(lines):
-                add(errors, "structural", f"{name}: reference `{path}:{start}:{end}` end line is out of range")
+                add(errors, "structural", f"{name}: reference `{path}:{start}-{end}` end line is out of range")
 
 
-def check_relative_links(name: str, text: str, out_dir: Path, errors: list) -> None:
+def check_relative_links(name: str, text: str, base_dir: Path, out_dir: Path, errors: list) -> None:
     if text is None:
         return
     for m in RELATIVE_LINK_RE.finditer(text):
@@ -406,7 +272,7 @@ def check_relative_links(name: str, text: str, out_dir: Path, errors: list) -> N
         if not clean:
             continue
         try:
-            target = (out_dir / clean).resolve()
+            target = (base_dir / clean).resolve()
             out_root = out_dir.resolve()
         except (OSError, RuntimeError, ValueError):
             add(errors, "infrastructure", f"{name}: could not resolve relative link -> {href}")
@@ -417,8 +283,6 @@ def check_relative_links(name: str, text: str, out_dir: Path, errors: list) -> N
 
 def check_meta(name: str, text: str, errors: list) -> None:
     if text is None:
-        return
-    if name.startswith("[domain]"):
         return
     if not (COMMIT_RE.search(text) or DATE_RE.search(text)):
         add(errors, "structural", f"{name}: missing commit hash or date")
@@ -450,16 +314,14 @@ def extract_surprise_items(text: str) -> list:
         return []
     start = match.end()
     next_head = re.search(r"^##\s+", text[start:], re.MULTILINE)
-    end = start + (next_head.start() if next_head else len(text))
-    section = text[start:end]
+    end = start + next_head.start() if next_head else len(text)
     items = []
-    for raw in section.split("\n"):
-        s = raw.strip()
-        if not s:
-            continue
-        if re.match(r"^\d+\.\s", s) or s.startswith("- "):
-            items.append(re.sub(r"^(\d+\.\s|-\s)", "", s).strip())
-    return [item for item in items if item]
+    for raw in text[start:end].split("\n"):
+        # Only unindented items count; nested bullets belong to the surprise above them.
+        m = re.match(r"(?:\d+\.|[-*])\s+(.*\S)", raw)
+        if m:
+            items.append(m.group(1).strip())
+    return items
 
 
 def extract_headline(item: str) -> str:
@@ -482,14 +344,16 @@ def check_surprise_cap_and_parity(files: dict, errors: list) -> None:
         add(errors, "structural", f"TECHNICAL_DOMAIN_GUIDE.md: lists {len(technical)} 'Three things' items; hard cap is 3")
     if not business or not technical:
         return
-    business_headlines = {normalize_for_compare(extract_headline(b)) for b in business}
-    technical_headlines = {normalize_for_compare(extract_headline(t)) for t in technical}
-    missing_in_tech = business_headlines - technical_headlines
+    business_headlines = [normalize_for_compare(extract_headline(b)) for b in business]
+    technical_headlines = [normalize_for_compare(extract_headline(t)) for t in technical]
+    missing_in_tech = set(business_headlines) - set(technical_headlines)
     if missing_in_tech:
         add(errors, "structural", f"TECHNICAL_DOMAIN_GUIDE.md: surprise items not aligned with BUSINESS_OVERVIEW.md (missing: {sorted(missing_in_tech)})")
-    missing_in_biz = technical_headlines - business_headlines
+    missing_in_biz = set(technical_headlines) - set(business_headlines)
     if missing_in_biz:
         add(errors, "structural", f"BUSINESS_OVERVIEW.md: surprise items not aligned with TECHNICAL_DOMAIN_GUIDE.md (missing: {sorted(missing_in_biz)})")
+    if not missing_in_tech and not missing_in_biz and business_headlines != technical_headlines:
+        add(errors, "structural", "surprise items must appear in the same order and count in both overviews")
 
 
 def check_overview_context_bidi(files: dict, out_dir: Path, errors: list) -> None:
@@ -503,7 +367,6 @@ def check_overview_context_bidi(files: dict, out_dir: Path, errors: list) -> Non
             continue
         linked = [href for href in re.findall(r"\]\(([^)]+)\)", text) if "domains/" in href]
         overview_targets.append((name, sorted(set(linked))))
-    expected = sorted(f"domains/{d}.md" for d in domains.keys() if not d.endswith(".md"))
     expected = sorted([f"domains/{d}" for d in domains])
     for name, linked in overview_targets:
         for d in expected:
@@ -522,18 +385,23 @@ def extract_ids(text: str) -> set:
     return {f"{kind}-{num}" for kind, num in ID_RE.findall(text)}
 
 
+def strip_header_blockquote(text: str) -> str:
+    # The header blockquote carries the ID legend (`R-001`, `C-001`, ...), which names notation, not findings.
+    first_section = re.search(r"^##\s", text, re.MULTILINE)
+    cut = first_section.start() if first_section else len(text)
+    return re.sub(r"^>.*$", "", text[:cut], flags=re.MULTILINE) + text[cut:]
+
+
 def check_id_cross_reference(files: dict, errors: list) -> None:
     technical_text = files.get("TECHNICAL_DOMAIN_GUIDE.md") or ""
-    defined = extract_ids(technical_text)
-    if not defined:
-        return
+    defined = extract_ids(strip_header_blockquote(technical_text))
     consumers = {"BUSINESS_OVERVIEW.md": files.get("BUSINESS_OVERVIEW.md") or ""}
     for d_name, d_text in files["__domains__"].items():
         consumers[f"domains/{d_name}"] = d_text
     for consumer_name, consumer_text in consumers.items():
         if not consumer_text:
             continue
-        referenced = extract_ids(consumer_text)
+        referenced = extract_ids(strip_header_blockquote(consumer_text))
         undefined = referenced - defined
         if undefined:
             sample = sorted(undefined)[:5]
@@ -801,6 +669,24 @@ def check_questions(questions: list, corpora: dict, errors: list) -> None:
             add(errors, "oracle", f"question '{q['question'][:60]}' cannot be answered (missing: {missing})")
 
 
+def check_documents(files: dict, out_dir: Path, repo_dir: Path, placeholders: set, errors: list) -> None:
+    for name, text in files.items():
+        if name == "__domains__":
+            for d_name, d_text in text.items():
+                tagged_name = f"[domain]{d_name}"
+                check_no_placeholders(tagged_name, d_text, placeholders, errors)
+                check_paths(tagged_name, d_text, errors)
+                check_relative_links(tagged_name, d_text, out_dir / "domains", out_dir, errors)
+                check_meta(tagged_name, d_text, errors)
+            continue
+        check_no_placeholders(name, text, placeholders, errors)
+        check_paths(name, text, errors)
+        check_references_against_repo(name, text, repo_dir, errors)
+        check_relative_links(name, text, out_dir, out_dir, errors)
+        check_meta(name, text, errors)
+        check_coverage_matrix(name, text, errors)
+
+
 def run_case(
     case_dir: Path,
     out_dir: Path,
@@ -828,20 +714,15 @@ def run_case(
         print(f"invalid evaluation paths: {exc}", file=sys.stderr)
         return 2
 
-    for name, text in files.items():
-        if name == "__domains__":
-            for d_name, d_text in text.items():
-                tagged_name = f"[domain]{d_name}"
-                check_no_placeholders(tagged_name, d_text, errors)
-                check_paths(tagged_name, d_text, errors)
-                check_relative_links(tagged_name, d_text, out_dir, errors)
-            continue
-        check_no_placeholders(name, text, errors)
-        check_paths(name, text, errors)
-        check_references_against_repo(name, text, repo_dir, errors)
-        check_relative_links(name, text, out_dir, errors)
-        check_meta(name, text, errors)
-        check_coverage_matrix(name, text, errors)
+    try:
+        placeholders = load_placeholders()
+    except OSError as exc:
+        placeholders = set()
+        add(errors, "infrastructure", f"could not read skill templates: {exc}")
+    if not placeholders:
+        add(errors, "infrastructure", "no template placeholders found; check the skill template directory")
+
+    check_documents(files, out_dir, repo_dir, placeholders, errors)
 
     check_surprise_cap_and_parity(files, errors)
     check_overview_context_bidi(files, out_dir, errors)

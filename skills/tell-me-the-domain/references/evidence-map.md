@@ -115,7 +115,7 @@ Someone already translated the rules into plain language for end users. This is 
 
 Domain test files under names like `*_test.*`, `*.spec.*`, `test_*.py`, `features/*.feature`.
 
-Read the *names* first — `it("rejects a refund after 30 days")` is a requirement. BDD feature files, when present, are business documentation that happens to execute. Fixtures and factories reveal what a realistic entity looks like, including which fields are truly mandatory in practice — see § 12 before deciding whether to read them.
+Read the *names* first — `it("rejects a berth request longer than 14 nights")` is a requirement. BDD feature files, when present, are business documentation that happens to execute. Fixtures and factories reveal what a realistic entity looks like, including which fields are truly mandatory in practice — see § 12 before deciding whether to read them.
 
 ## 10. History and social evidence
 

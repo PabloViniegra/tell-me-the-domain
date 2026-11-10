@@ -68,11 +68,13 @@ The configured agent and judge commands are trusted executables, not a sandbox b
 Deterministic:
 
 - Both overview documents exist; per-context files exist iff the technical guide links them.
-- No template placeholders remain (`[Product name]`, `[Concept]`, `[Rule]`, …).
-- Every relative Markdown link resolves.
-- Every `path:line` reference in the technical guide points to an existing file in the case repo, with the line within range.
+- No template placeholders remain. Placeholders are read from the skill templates (and from `$TMTD_SKILL_DIR` when set), so new template fields are checked automatically. Text inside inline code is ignored.
+- Every relative Markdown link resolves, from the folder of the document that contains it.
+- Every `path:line` or `path:start-end` reference in the technical guide points to an existing file in the case repo, with the lines within range; a trailing `:col` is ignored.
 - The business document and per-context documents contain no `path:line` references (IDs instead).
-- Every document states a commit hash or date and an analysis mode.
+- Every ID used in the business overview or per-context files appears in the technical guide; the ID legend in each header blockquote counts on neither side.
+- Both surprise sections hold at most three top-level items, with the same headlines in the same order.
+- Every document, including per-context files, states a commit hash or date and an analysis mode.
 - The technical guide contains a coverage matrix with recognized statuses.
 
 Oracle-driven:

@@ -27,7 +27,7 @@ One entry per finding:
 | `kind` | One value from the kind table below. |
 | `claim` | The statement, in one sentence. |
 | `claim_type` | One of the five types above. |
-| `evidence` | `path:line` list; empty only for `missing-evidence`. |
+| `evidence` | `path:line` or `path:start-end` list; empty only for `missing-evidence`. |
 | `actor` / `trigger` / `outcome` | For processes and rules: who, what starts it, what results. |
 | `failure_mode` | What happens when violated: exception, HTTP status, silent fallback, nothing observed. |
 | `evidence_confidence` | `direct` (the code or docs say it) / `corroborated` (two independent artifacts agree) / `indirect` (inferred from naming or shape). |

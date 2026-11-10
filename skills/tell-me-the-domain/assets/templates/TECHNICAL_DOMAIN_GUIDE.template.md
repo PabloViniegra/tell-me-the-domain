@@ -1,14 +1,14 @@
 # [Product name] — Technical domain guide
 
 > Reconstructed from the codebase at [commit / date]. Analysis mode: [complete context / repository atlas]. This guide describes observed behavior only.
-> References point to `path/to/file.ext:line` as of that revision. Do not infer expected behavior or propose corrections. Record inconsistencies, contradictions, and ambiguities as observations with their evidence.
+> References point to `path/to/file.ext:line` (or `path/to/file.ext:start-end` for a span) as of that revision. Do not infer expected behavior or propose corrections. Record inconsistencies, contradictions, and ambiguities as observations with their evidence.
 > Every rule, concept, process, and term carries a stable ID (`R-001`, `C-001`, `P-001`, `T-001`); `BUSINESS_OVERVIEW.md` and the per-context files reference those IDs, and this guide is where their evidence lives.
 
 ## Orientation
 
 [Two or three sentences: what the system does, what shape it is (single service, monorepo, modular monolith), and where the business logic actually lives versus where it merely passes through.]
 
-*Example:* *Acme Claims is a modular monolith with three deployables (portal, API, worker). The pricing logic lives entirely in `src/pricing/`; the rest is request routing, persistence, and presentation.*
+*Example:* *Tidewater Marina is a modular monolith with three deployables (portal, API, worker). The berth allocation logic lives entirely in `src/allocation/`; the rest is request routing, persistence, and presentation.*
 
 **Discovery boundary:** [Contexts and deployables analyzed.] **Sampled or excluded:** [Areas intentionally not read and why.] **Confidence limits:** [Missing tools, unavailable contracts, conflicting evidence, or recommended next context.]
 
@@ -22,12 +22,12 @@
 
 ## Three things that would surprise a newcomer
 
-[Three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Hard cap at three. The same three findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer`, in the same order and with the identical italic headline; only the explanation after the headline changes register.]
+[Up to three observed findings — drawn from the code, not inferred — that contradict what a reasonable reader would assume before opening the code. Hard cap at three. The same findings appear in `BUSINESS_OVERVIEW.md § Three things that would surprise a newcomer`, in the same order and with the identical italic headline; only the explanation after the headline changes register. If the repository yields fewer surprising observations, list only those; in an absence report, the absence itself is the finding.]
 
 *Example (headlines identical to the business overview example):*
-1. *The "Submit" button does not send the claim to the insurer.* *`submit_claim` only enqueues the claim for internal review; no insurer adapter is called on that path.* (R-003) — `src/claims/service.py:88`
-2. *"Reject" means two different things in the same flow.* *Internal-review and insurer rejections raise the same `ClaimRejected`; the email template does not branch on the source.* (R-011) — `src/claims/exceptions.py:12`, `templates/rejected.html:4`
-3. *A claim can be marked Paid in the database even if the service-layer guard is bypassed.* *`src/claims/service.py:142` rejects `Submitted → Paid`; `migrations/0042.sql:18` allows it. Either side can be patched without the other noticing.* (R-007) — `src/claims/service.py:142`, `migrations/0042.sql:18`
+1. *The "Confirm" button does not reserve the berth.* *`confirm_booking` only enqueues the request for the harbourmaster; no berth row is locked on that path.* (R-003) — `src/bookings/service.py:88`
+2. *"Cancel" means two different things in the same flow.* *Skipper cancellations and weather closures emit the same `BookingCancelled`; the email template does not branch on the cause.* (R-011) — `src/bookings/events.py:12`, `templates/cancelled.html:4`
+3. *A booking can be marked Checked In in the database even if the service-layer guard is bypassed.* *`src/bookings/service.py:142` rejects `Requested → CheckedIn`; `migrations/0042.sql:18` allows it. Either side can be patched without the other noticing.* (R-007) — `src/bookings/service.py:142`, `migrations/0042.sql:18`
 
 ## Read these first
 
@@ -68,7 +68,7 @@ erDiagram
 | C-001 | [Name] | `path:line` | [Natural or surrogate key] | [Aggregate root, value object, lifecycle owner] |
 
 *Example:*
-| C-001 | *Claim* | *`src/claims/models.py:21`* | *Surrogate (`claim_id`); natural key is `(hospital_id, insurer_ref)`* | *Aggregate root; owns its Review and Payment rows.* |
+| C-001 | *Booking* | *`src/bookings/models.py:21`* | *Surrogate (`booking_id`); `UNIQUE (berth_id, night)` on the occupancy table* | *Aggregate root; owns its HarbourLog and StayCharge rows.* |
 
 ## Lifecycles
 
@@ -78,18 +78,18 @@ erDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft
-    Draft --> Active: [trigger]
-    Active --> Closed: [trigger]
+    [*] --> [Initial state]
+    [Initial state] --> [Next state]: [trigger]
+    [Next state] --> [Terminal state]: [trigger]
 ```
 
 | Transition | Enforced at | Guard | On violation |
 |---|---|---|---|
-| Draft → Active | `path:line` | [Condition] | [Error raised / behaviour] |
+| [Initial state] → [Next state] | `path:line` | [Condition] | [Error raised / behaviour] |
 
 *Example:*
-| *Submitted → In Review* | *`src/claims/service.py:142`* | *`reviewer_id is not None`* | *Raises `NoReviewerAssigned`; the API returns 409.* |
-| *In Review → Paid* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *Both the service-level guard and the DB CHECK* | *Service raises `PaymentBeforeReview` (422); DB rejects the UPDATE if the guard is bypassed.* |
+| *Requested → Confirmed* | *`src/bookings/service.py:142`* | *`berth_id is not None`* | *Raises `NoBerthAssigned`; the API returns 409.* |
+| *Confirmed → CheckedIn* | *`src/bookings/service.py:198`, `migrations/0042.sql:18`* | *Both the service-level guard and the DB CHECK* | *Service raises `HullCheckMissing` (422); DB rejects the UPDATE if the guard is bypassed.* |
 
 Transitions explicitly rejected: [guards/constraints that fire].
 Transitions with no observed code: [absences — no enforcement found either way].
@@ -118,8 +118,8 @@ Grouped by concept. Each rule gets a stable ID, its evidence, and four separate 
 | R-001 | [What must hold] | `path:line` | [direct / corroborated / indirect] | [db / domain / …] | [consistent / divergent / unknown] | [active / …] | [Exception, HTTP status, silent fallback] | [Documented rationale / not stated in repository] |
 
 *Example:*
-| R-007 | *A claim cannot move to Paid without a reviewer_id* | *`src/claims/service.py:198`, `migrations/0042.sql:18`* | *direct* | *domain + db* | *divergent (the two layers reject different transitions)* | *active* | *Service raises `PaymentBeforeReview`; DB CHECK rejects the row UPDATE.* | *Stated in `docs/policies/audit.md:4`.* |
-| R-009 | *A reviewer cannot approve claims from their own hospital* | *`src/accounts/policy.py:71`* | *direct* | *application* | *unknown (nothing in the DB layer re-checks this)* | *active* | *API returns 403.* | *Not stated in the repository.* |
+| R-007 | *A booking cannot move to CheckedIn without a hull_check_id* | *`src/bookings/service.py:198`, `migrations/0042.sql:18`* | *direct* | *domain + db* | *divergent (the two layers reject different transitions)* | *active* | *Service raises `HullCheckMissing`; DB CHECK rejects the row UPDATE.* | *Stated in `docs/policies/safety.md:4`.* |
+| R-009 | *A harbourmaster cannot confirm bookings for a boat they own* | *`src/accounts/policy.py:71`* | *direct* | *application* | *unknown (nothing in the DB layer re-checks this)* | *active* | *API returns 403.* | *Not stated in the repository.* |
 
 ## Policies, constants and calculations
 
@@ -133,7 +133,9 @@ Grouped by concept. Each rule gets a stable ID, its evidence, and four separate 
 
 | ID | Actor | Can | Enforced at |
 |---|---|---|---|
-| A-001 | [Role] | [Operations] | `path:line` |
+| R-040 | [Role] (A-001) | [Operations] | `path:line` |
+
+[Actors carry `A-` IDs; each permission is a rule-shaped finding with an `R-` ID, per `references/evidence-ledger.md`.]
 
 [Tenant or organization scoping: how it is applied, and where it could be forgotten. Include automated actors — jobs and consumers — with the operations they perform.]
 
@@ -165,9 +167,9 @@ Things a newcomer should know before their first change. Facts and their direct 
 
 *Example:*
 
-- **BLOCKER — Claim status transitions are guarded in two places** — `src/claims/service.py:142` and `migrations/0042.sql:18`. The Python guard allows `Submitted → Rejected`; the DB constraint does not. Either side can be patched without the other noticing.
-- **RISK — Insurer fee schedules are committed as JSON in the repo** — `config/fees/insurer-acme.json:1`. A change requires a full deploy; there is no admin UI or feature flag.
-- **SMELL — `legacy_submit()` in `src/claims/actions.py:204` has no callers** — unreachable in the current codebase.
+- **BLOCKER — Booking status transitions are guarded in two places** — `src/bookings/service.py:142` and `migrations/0042.sql:18`. The Python guard allows `Confirmed → Cancelled`; the DB constraint does not. Either side can be patched without the other noticing.
+- **RISK — Seasonal berth tariffs are committed as YAML in the repo** — `config/tariffs/summer.yaml:1`. A change requires a full deploy; there is no admin UI or feature flag.
+- **SMELL — `legacy_confirm()` in `src/bookings/actions.py:204` has no callers** — unreachable in the current codebase.
 
 ### Terminology traps
 
@@ -184,7 +186,7 @@ Naming mismatches between the code and the business. Each row names the trap, th
 | T-001 | `[Identifier]` | [Business word] | `path:line` | [Synonym, homonym, or legacy naming] |
 
 *Example:*
-| T-007 | *`payout_amount_cents`* | *Net payout* | *`src/payments/models.py:33`* | *Field stored in cents; UI shows dollars. Watch for off-by-100 bugs when reading the value back.* |
+| T-007 | *`length_overall_cm`* | *Boat length* | *`src/boats/models.py:33`* | *Field stored in centimetres; UI shows metres. Watch for off-by-100 bugs when reading the value back.* |
 
 ## Related contexts
 
@@ -206,5 +208,5 @@ List only facts that cannot be established from the repository, such as invisibl
 Every `F-` ID used in any document is defined here.
 
 *Example:*
-1. *F-001 — Who negotiates the per-insurer fee schedule — product or finance? The code reads schedules from `config/fees/` but nothing in the repository identifies the owner or the cadence.*
-2. *F-002 — What is the contractual SLA with each insurer after the 48h internal review window expires? The code escalates to a human but does not record what the insurer is then obligated to do.*
+1. *F-001 — Who sets the seasonal berth tariffs — the marina operator or the port authority? The code reads tariffs from `config/tariffs/` but nothing in the repository identifies the owner or the cadence.*
+2. *F-002 — What happens to a confirmed berth when a weather closure lasts beyond three days? The code flags the booking but does not record what the marina then owes the skipper.*

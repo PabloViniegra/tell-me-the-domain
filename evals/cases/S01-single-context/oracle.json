@@ -58,10 +58,10 @@
       "id": "R-005",
       "kind": "rule",
       "importance": "important",
-      "statement": "Each claim is identified by (hospital_id, insurer_ref).",
+      "statement": "Every claim must record the hospital that files it and an insurer reference; both are mandatory.",
       "required_terms": ["hospital", "insurer"],
       "expected_in": "business",
-      "evidence": [{"path": "src/claims/models.py", "lines": [10, 11]}]
+      "evidence": [{"path": "src/claims/models.py", "lines": [10, 11]}, {"path": "migrations/001_init.sql", "lines": [3, 4]}]
     },
     {
       "id": "L-001",

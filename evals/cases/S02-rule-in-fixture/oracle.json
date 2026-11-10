@@ -23,8 +23,8 @@
       "id": "R-103",
       "kind": "calculation",
       "importance": "critical",
-      "statement": "Pricing rounds using the half_up rule configured per insurer.",
-      "required_terms": ["half_up"],
+      "statement": "The insurer configuration declares half_up rounding, but the engine never reads that key and rounds the fee with Python's built-in round, which breaks ties to the even cent.",
+      "required_terms": ["half_up", "even"],
       "expected_in": "technical",
       "evidence": [{"path": "config/fees/insurer-acme.json", "lines": [3]}, {"path": "src/pricing/engine.py", "lines": [14, 15]}]
     },
@@ -40,7 +40,7 @@
       "id": "C-101",
       "kind": "concept",
       "importance": "important",
-      "statement": "Per-insurer configuration files are authoritative for rate and rounding rule.",
+      "statement": "Per-insurer configuration files are authoritative for the fee rate; the rounding rule they declare is not applied by the engine.",
       "required_terms": ["insurer", "configuration"],
       "expected_in": "both",
       "evidence": [{"path": "src/pricing/engine.py", "lines": [7, 8, 9, 13]}, {"path": "config/fees/insurer-acme.json", "lines": [2, 3]}]
